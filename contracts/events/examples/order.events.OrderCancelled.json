@@ -1,0 +1,56 @@
+{
+  "topic": "order.events",
+  "key": "436e2dc9-d414-4be9-aad4-20d841c58647",
+  "value": {
+    "eventId": "aac7486c-66b4-4cc0-96f5-df87e1820f93",
+    "payload": {
+      "reason": "CAPTURE_FAILED",
+      "status": "CANCELLED",
+      "orderId": "436e2dc9-d414-4be9-aad4-20d841c58647",
+      "currency": "USD",
+      "taxTotal": 11.92,
+      "suborders": [
+        {
+          "items": [
+            {
+              "sku": "AUR-HP-BLK",
+              "quantity": 1,
+              "lineTotal": 149,
+              "productId": "ac7be20f-d709-4812-97d8-225893f15f66",
+              "unitPrice": 149,
+              "variantId": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+              "productName": "Aurora Studio Headphones",
+              "variantName": "Matte Black"
+            }
+          ],
+          "total": 160.92,
+          "status": "CANCELLED",
+          "vendorId": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+          "taxAmount": 11.92,
+          "suborderId": "cd631c9d-1d63-4ca8-9bb7-f0d4fa1ad304",
+          "vendorName": "Aurora Sound Co.",
+          "itemsSubtotal": 149,
+          "commissionRate": 0.1,
+          "discountAmount": 0,
+          "shippingAmount": 0,
+          "vendorNetAmount": 134.1,
+          "commissionAmount": 14.9
+        }
+      ],
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b",
+      "totalAmount": 160.92,
+      "wasConfirmed": false,
+      "discountTotal": 0,
+      "itemsSubtotal": 149,
+      "shippingTotal": 0
+    },
+    "producer": "order-service",
+    "eventType": "OrderCancelled",
+    "occurredAt": "2026-10-11T07:00:46.765797060Z",
+    "aggregateId": "436e2dc9-d414-4be9-aad4-20d841c58647",
+    "causationId": "2ccdd5ef-04d1-4b14-accd-e1fab0f05d07",
+    "aggregateType": "Order",
+    "correlationId": "8e1d8c5e-b737-49ae-812b-f3e5642c956d",
+    "schemaVersion": 1
+  }
+}

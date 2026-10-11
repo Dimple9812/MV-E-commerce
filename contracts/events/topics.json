@@ -1,0 +1,673 @@
+{
+  "topics": {
+    "identity.user.events": {
+      "producer": "identity-service",
+      "key": "userId",
+      "aggregate": "User",
+      "partitions": 3,
+      "deadLetterTopic": "identity.user.events.dlt",
+      "events": [
+        {
+          "eventType": "UserRegistered",
+          "schemaVersion": 1,
+          "schema": "schemas/identity.user.events.UserRegistered.v1.schema.json",
+          "consumers": [
+            "notification-service"
+          ],
+          "description": "A customer account was created."
+        },
+        {
+          "eventType": "UserRolesChanged",
+          "schemaVersion": 1,
+          "schema": "schemas/identity.user.events.UserRolesChanged.v1.schema.json",
+          "consumers": [
+            "notification-service"
+          ],
+          "description": "Roles changed, e.g. VENDOR granted after approval."
+        },
+        {
+          "eventType": "UserStatusChanged",
+          "schemaVersion": 1,
+          "schema": "schemas/identity.user.events.UserStatusChanged.v1.schema.json",
+          "consumers": [
+            "notification-service"
+          ],
+          "description": "An administrator activated or deactivated the account."
+        },
+        {
+          "eventType": "PasswordChanged",
+          "schemaVersion": 1,
+          "schema": "schemas/identity.user.events.PasswordChanged.v1.schema.json",
+          "consumers": [
+            "notification-service"
+          ],
+          "description": "Password changed or reset; all refresh tokens were revoked."
+        }
+      ]
+    },
+    "vendor.events": {
+      "producer": "vendor-service",
+      "key": "vendorId",
+      "aggregate": "Vendor",
+      "partitions": 3,
+      "deadLetterTopic": "vendor.events.dlt",
+      "events": [
+        {
+          "eventType": "VendorApplicationSubmitted",
+          "schemaVersion": 1,
+          "schema": "schemas/vendor.events.VendorApplicationSubmitted.v1.schema.json",
+          "consumers": [
+            "identity-service",
+            "catalog-service",
+            "inventory-service",
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "A customer applied to sell."
+        },
+        {
+          "eventType": "VendorApproved",
+          "schemaVersion": 1,
+          "schema": "schemas/vendor.events.VendorApproved.v1.schema.json",
+          "consumers": [
+            "identity-service",
+            "catalog-service",
+            "inventory-service",
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Application approved; identity grants the VENDOR role."
+        },
+        {
+          "eventType": "VendorRejected",
+          "schemaVersion": 1,
+          "schema": "schemas/vendor.events.VendorRejected.v1.schema.json",
+          "consumers": [
+            "identity-service",
+            "catalog-service",
+            "inventory-service",
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Application rejected with a reason."
+        },
+        {
+          "eventType": "VendorSuspended",
+          "schemaVersion": 1,
+          "schema": "schemas/vendor.events.VendorSuspended.v1.schema.json",
+          "consumers": [
+            "identity-service",
+            "catalog-service",
+            "inventory-service",
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Seller suspended; catalog hides their products, checkout rejects them."
+        },
+        {
+          "eventType": "VendorReinstated",
+          "schemaVersion": 1,
+          "schema": "schemas/vendor.events.VendorReinstated.v1.schema.json",
+          "consumers": [
+            "identity-service",
+            "catalog-service",
+            "inventory-service",
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Suspension lifted."
+        },
+        {
+          "eventType": "VendorProfileUpdated",
+          "schemaVersion": 1,
+          "schema": "schemas/vendor.events.VendorProfileUpdated.v1.schema.json",
+          "consumers": [
+            "identity-service",
+            "catalog-service",
+            "inventory-service",
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Shop name, description or contact details changed."
+        },
+        {
+          "eventType": "VendorCommissionChanged",
+          "schemaVersion": 1,
+          "schema": "schemas/vendor.events.VendorCommissionChanged.v1.schema.json",
+          "consumers": [
+            "identity-service",
+            "catalog-service",
+            "inventory-service",
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Commission rate changed by an administrator."
+        }
+      ]
+    },
+    "catalog.product.events": {
+      "producer": "catalog-service",
+      "key": "productId",
+      "aggregate": "Product",
+      "partitions": 3,
+      "deadLetterTopic": "catalog.product.events.dlt",
+      "events": [
+        {
+          "eventType": "ProductCreated",
+          "schemaVersion": 1,
+          "schema": "schemas/catalog.product.events.ProductCreated.v1.schema.json",
+          "consumers": [
+            "inventory-service",
+            "order-service"
+          ],
+          "description": "Draft created with its variants."
+        },
+        {
+          "eventType": "ProductUpdated",
+          "schemaVersion": 1,
+          "schema": "schemas/catalog.product.events.ProductUpdated.v1.schema.json",
+          "consumers": [
+            "inventory-service",
+            "order-service"
+          ],
+          "description": "Details, variants or images changed."
+        },
+        {
+          "eventType": "ProductPublished",
+          "schemaVersion": 1,
+          "schema": "schemas/catalog.product.events.ProductPublished.v1.schema.json",
+          "consumers": [
+            "inventory-service",
+            "order-service"
+          ],
+          "description": "Visible in the storefront and purchasable."
+        },
+        {
+          "eventType": "ProductPriceChanged",
+          "schemaVersion": 1,
+          "schema": "schemas/catalog.product.events.ProductPriceChanged.v1.schema.json",
+          "consumers": [
+            "inventory-service",
+            "order-service"
+          ],
+          "description": "A variant price changed; priceChange carries old and new price."
+        },
+        {
+          "eventType": "ProductArchived",
+          "schemaVersion": 1,
+          "schema": "schemas/catalog.product.events.ProductArchived.v1.schema.json",
+          "consumers": [
+            "inventory-service",
+            "order-service"
+          ],
+          "description": "Withdrawn by the seller."
+        },
+        {
+          "eventType": "ProductBlocked",
+          "schemaVersion": 1,
+          "schema": "schemas/catalog.product.events.ProductBlocked.v1.schema.json",
+          "consumers": [
+            "inventory-service",
+            "order-service"
+          ],
+          "description": "Blocked by moderation."
+        },
+        {
+          "eventType": "ProductDeleted",
+          "schemaVersion": 1,
+          "schema": "schemas/catalog.product.events.ProductDeleted.v1.schema.json",
+          "consumers": [
+            "inventory-service",
+            "order-service"
+          ],
+          "description": "Never-published draft deleted (status DELETED)."
+        }
+      ]
+    },
+    "inventory.commands": {
+      "producer": "order-service",
+      "key": "orderId",
+      "aggregate": "Order",
+      "partitions": 3,
+      "deadLetterTopic": "inventory.commands.dlt",
+      "events": [
+        {
+          "eventType": "InventoryReservationRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.commands.InventoryReservationRequested.v1.schema.json",
+          "consumers": [
+            "inventory-service"
+          ],
+          "description": "Saga step: reserve every line or none."
+        },
+        {
+          "eventType": "InventoryConfirmationRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.commands.InventoryConfirmationRequested.v1.schema.json",
+          "consumers": [
+            "inventory-service"
+          ],
+          "description": "Saga step after capture: turn the reservation into a sale."
+        },
+        {
+          "eventType": "InventoryReleaseRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.commands.InventoryReleaseRequested.v1.schema.json",
+          "consumers": [
+            "inventory-service"
+          ],
+          "description": "Compensation: release a reservation (idempotent; tombstones a late reservation)."
+        },
+        {
+          "eventType": "InventoryRestockRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.commands.InventoryRestockRequested.v1.schema.json",
+          "consumers": [
+            "inventory-service"
+          ],
+          "description": "Compensation after a confirmed sale is cancelled: return sold units."
+        }
+      ]
+    },
+    "inventory.events": {
+      "producer": "inventory-service",
+      "key": "orderId (reservation events) or variantId (stock events)",
+      "aggregate": "Reservation | InventoryItem",
+      "partitions": 3,
+      "deadLetterTopic": "inventory.events.dlt",
+      "events": [
+        {
+          "eventType": "InventoryReserved",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.events.InventoryReserved.v1.schema.json",
+          "consumers": [
+            "order-service"
+          ],
+          "description": "All lines reserved until expiresAt."
+        },
+        {
+          "eventType": "InventoryReservationFailed",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.events.InventoryReservationFailed.v1.schema.json",
+          "consumers": [
+            "order-service"
+          ],
+          "description": "Not enough stock for at least one line; nothing was reserved."
+        },
+        {
+          "eventType": "InventoryReservationConfirmed",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.events.InventoryReservationConfirmed.v1.schema.json",
+          "consumers": [
+            "order-service"
+          ],
+          "description": "Reserved units became sold."
+        },
+        {
+          "eventType": "InventoryReservationReleased",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.events.InventoryReservationReleased.v1.schema.json",
+          "consumers": [
+            "order-service"
+          ],
+          "description": "Reserved units returned to available."
+        },
+        {
+          "eventType": "InventoryRestocked",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.events.InventoryRestocked.v1.schema.json",
+          "consumers": [
+            "order-service"
+          ],
+          "description": "Sold units returned after a cancellation."
+        },
+        {
+          "eventType": "StockLevelChanged",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.events.StockLevelChanged.v1.schema.json",
+          "consumers": [
+            "catalog-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Availability changed; stockVersion orders updates per variant."
+        },
+        {
+          "eventType": "LowStockDetected",
+          "schemaVersion": 1,
+          "schema": "schemas/inventory.events.LowStockDetected.v1.schema.json",
+          "consumers": [
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Available stock crossed the seller's threshold downwards."
+        }
+      ]
+    },
+    "order.events": {
+      "producer": "order-service",
+      "key": "orderId",
+      "aggregate": "Order",
+      "partitions": 3,
+      "deadLetterTopic": "order.events.dlt",
+      "events": [
+        {
+          "eventType": "OrderCreated",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.OrderCreated.v1.schema.json",
+          "consumers": [
+            "vendor-service",
+            "notification-service",
+            "analytics-service",
+            "review-service"
+          ],
+          "description": "Pending order and suborders created; the saga starts."
+        },
+        {
+          "eventType": "OrderConfirmed",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.OrderConfirmed.v1.schema.json",
+          "consumers": [
+            "vendor-service",
+            "notification-service",
+            "analytics-service",
+            "review-service"
+          ],
+          "description": "Payment captured and stock confirmed."
+        },
+        {
+          "eventType": "OrderCancelled",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.OrderCancelled.v1.schema.json",
+          "consumers": [
+            "vendor-service",
+            "notification-service",
+            "analytics-service",
+            "review-service"
+          ],
+          "description": "Cancelled by compensation or by the customer."
+        },
+        {
+          "eventType": "OrderStatusChanged",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.OrderStatusChanged.v1.schema.json",
+          "consumers": [
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Other status changes (FAILED, REFUND_FAILED)."
+        },
+        {
+          "eventType": "ShipmentCreated",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.ShipmentCreated.v1.schema.json",
+          "consumers": [
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "A seller shipped their suborder."
+        },
+        {
+          "eventType": "SuborderDelivered",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.SuborderDelivered.v1.schema.json",
+          "consumers": [
+            "review-service",
+            "analytics-service"
+          ],
+          "description": "A suborder was delivered; its products become reviewable."
+        },
+        {
+          "eventType": "OrderDelivered",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.OrderDelivered.v1.schema.json",
+          "consumers": [
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Every suborder delivered."
+        },
+        {
+          "eventType": "RefundRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/order.events.RefundRequested.v1.schema.json",
+          "consumers": [
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Informational: a refund was requested for a cancelled confirmed order."
+        }
+      ]
+    },
+    "payment.commands": {
+      "producer": "order-service",
+      "key": "orderId",
+      "aggregate": "Order",
+      "partitions": 3,
+      "deadLetterTopic": "payment.commands.dlt",
+      "events": [
+        {
+          "eventType": "PaymentAuthorizationRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.commands.PaymentAuthorizationRequested.v1.schema.json",
+          "consumers": [
+            "payment-service"
+          ],
+          "description": "Saga step: authorise the order total."
+        },
+        {
+          "eventType": "PaymentCaptureRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.commands.PaymentCaptureRequested.v1.schema.json",
+          "consumers": [
+            "payment-service"
+          ],
+          "description": "Saga step after reservation: capture the authorisation."
+        },
+        {
+          "eventType": "PaymentVoidRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.commands.PaymentVoidRequested.v1.schema.json",
+          "consumers": [
+            "payment-service"
+          ],
+          "description": "Compensation: release an uncaptured authorisation."
+        },
+        {
+          "eventType": "RefundRequested",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.commands.RefundRequested.v1.schema.json",
+          "consumers": [
+            "payment-service"
+          ],
+          "description": "Compensation or customer cancellation: refund a captured payment."
+        }
+      ]
+    },
+    "payment.events": {
+      "producer": "payment-service",
+      "key": "orderId",
+      "aggregate": "Payment",
+      "partitions": 3,
+      "deadLetterTopic": "payment.events.dlt",
+      "events": [
+        {
+          "eventType": "PaymentAuthorized",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.PaymentAuthorized.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Funds held."
+        },
+        {
+          "eventType": "PaymentFailed",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.PaymentFailed.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Authorisation declined; code says why."
+        },
+        {
+          "eventType": "PaymentOutcomeUnknown",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.PaymentOutcomeUnknown.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Provider did not answer in time; reconciliation will settle the outcome."
+        },
+        {
+          "eventType": "PaymentCaptured",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.PaymentCaptured.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Funds captured."
+        },
+        {
+          "eventType": "PaymentCaptureFailed",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.PaymentCaptureFailed.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Capture failed; the authorisation is voided."
+        },
+        {
+          "eventType": "PaymentVoided",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.PaymentVoided.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Authorisation released."
+        },
+        {
+          "eventType": "RefundCompleted",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.RefundCompleted.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Refund succeeded; refundId and refundedAmount set."
+        },
+        {
+          "eventType": "RefundFailed",
+          "schemaVersion": 1,
+          "schema": "schemas/payment.events.RefundFailed.v1.schema.json",
+          "consumers": [
+            "order-service",
+            "notification-service",
+            "analytics-service"
+          ],
+          "description": "Refund failed at the provider; needs manual follow-up."
+        }
+      ]
+    },
+    "review.events": {
+      "producer": "review-service",
+      "key": "productId",
+      "aggregate": "Review | ProductRating",
+      "partitions": 3,
+      "deadLetterTopic": "review.events.dlt",
+      "events": [
+        {
+          "eventType": "ReviewCreated",
+          "schemaVersion": 1,
+          "schema": "schemas/review.events.ReviewCreated.v1.schema.json",
+          "consumers": [
+            "analytics-service"
+          ],
+          "description": "Verified purchaser posted a review."
+        },
+        {
+          "eventType": "ReviewUpdated",
+          "schemaVersion": 1,
+          "schema": "schemas/review.events.ReviewUpdated.v1.schema.json",
+          "consumers": [
+            "analytics-service"
+          ],
+          "description": "Author edited a review."
+        },
+        {
+          "eventType": "ReviewDeleted",
+          "schemaVersion": 1,
+          "schema": "schemas/review.events.ReviewDeleted.v1.schema.json",
+          "consumers": [
+            "analytics-service"
+          ],
+          "description": "Author deleted a review."
+        },
+        {
+          "eventType": "ReviewHidden",
+          "schemaVersion": 1,
+          "schema": "schemas/review.events.ReviewHidden.v1.schema.json",
+          "consumers": [
+            "analytics-service"
+          ],
+          "description": "Moderator hid a review."
+        },
+        {
+          "eventType": "ReviewRestored",
+          "schemaVersion": 1,
+          "schema": "schemas/review.events.ReviewRestored.v1.schema.json",
+          "consumers": [
+            "analytics-service"
+          ],
+          "description": "Moderator restored a review."
+        },
+        {
+          "eventType": "ProductRatingUpdated",
+          "schemaVersion": 1,
+          "schema": "schemas/review.events.ProductRatingUpdated.v1.schema.json",
+          "consumers": [
+            "catalog-service"
+          ],
+          "description": "Recomputed aggregate rating of a product."
+        }
+      ]
+    },
+    "platform.audit.events": {
+      "producer": "every service",
+      "key": "resourceId",
+      "aggregate": "any",
+      "partitions": 3,
+      "deadLetterTopic": "platform.audit.events.dlt",
+      "events": [
+        {
+          "eventType": "AuditRecorded",
+          "schemaVersion": 1,
+          "schema": "schemas/platform.audit.events.AuditRecorded.v1.schema.json",
+          "consumers": [
+            "analytics-service"
+          ],
+          "description": "Security-relevant or administrative action."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/order.events.OrderStatusChanged.v1.schema.json",
+  "title": "OrderStatusChanged v1",
+  "description": "Other status changes (FAILED, REFUND_FAILED).",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "OrderStatusChanged"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "customerId",
+        "orderId",
+        "status"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "x-topic": "order.events",
+  "x-producer": "order-service",
+  "x-consumers": [
+    "notification-service",
+    "analytics-service"
+  ],
+  "x-key": "orderId"
+}

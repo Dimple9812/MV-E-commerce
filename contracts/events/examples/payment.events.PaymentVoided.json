@@ -1,0 +1,23 @@
+{
+  "topic": "payment.events",
+  "key": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+  "value": {
+    "eventId": "e71154a7-53af-4b6a-adde-bf9968ce4229",
+    "payload": {
+      "amount": 160.92,
+      "status": "VOIDED",
+      "orderId": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+      "currency": "USD",
+      "paymentId": "c1b2650b-02a2-424b-af95-794bfdfc8c37",
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b"
+    },
+    "producer": "payment-service",
+    "eventType": "PaymentVoided",
+    "occurredAt": "2026-10-11T01:53:37.581021602Z",
+    "aggregateId": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+    "causationId": "ace3a917-4088-4a07-b46e-986cb4f983ce",
+    "aggregateType": "Payment",
+    "correlationId": "fa71a8ab-42ff-4e83-8a99-47dd76b08978",
+    "schemaVersion": 1
+  }
+}

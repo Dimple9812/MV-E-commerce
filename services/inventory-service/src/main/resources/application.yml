@@ -1,0 +1,20 @@
+server:
+  port: ${PORT:8084}
+
+spring:
+  application:
+    name: inventory-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/inventory_db}
+    username: ${DB_USERNAME:inventory_svc}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+
+marketflow:
+  kafka:
+    produces: inventory.events,platform.audit.events
+    consumes: inventory.commands,catalog.product.events,vendor.events
+  inventory:
+    reservation-ttl: ${RESERVATION_TTL:15m}
+    expiry-scan: 30s

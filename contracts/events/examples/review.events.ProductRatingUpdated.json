@@ -1,0 +1,19 @@
+{
+  "topic": "review.events",
+  "key": "02db0283-fd5b-4707-a931-22674f1e3326",
+  "value": {
+    "eventId": "5cefc681-e28c-468e-989b-20ebbc29817e",
+    "payload": {
+      "productId": "02db0283-fd5b-4707-a931-22674f1e3326",
+      "reviewCount": 1,
+      "averageRating": 5
+    },
+    "producer": "review-service",
+    "eventType": "ProductRatingUpdated",
+    "occurredAt": "2026-10-11T08:54:16.020234774Z",
+    "aggregateId": "02db0283-fd5b-4707-a931-22674f1e3326",
+    "aggregateType": "ProductRating",
+    "correlationId": "3b3416d6-b14b-4df1-b336-c6d4d8ac4938",
+    "schemaVersion": 1
+  }
+}

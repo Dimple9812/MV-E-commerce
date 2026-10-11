@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/order.events.OrderCancelled.v1.schema.json",
+  "title": "OrderCancelled v1",
+  "description": "Cancelled by compensation or by the customer.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "OrderCancelled"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "currency",
+        "customerId",
+        "discountTotal",
+        "itemsSubtotal",
+        "orderId",
+        "shippingTotal",
+        "status",
+        "suborders",
+        "taxTotal",
+        "totalAmount",
+        "wasConfirmed"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "itemsSubtotal": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "discountTotal": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "shippingTotal": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "taxTotal": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "totalAmount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "wasConfirmed": {
+          "type": "boolean",
+          "description": "true on OrderCancelled when the order had been confirmed (a refund follows)"
+        },
+        "suborders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "commissionAmount",
+              "commissionRate",
+              "discountAmount",
+              "items",
+              "itemsSubtotal",
+              "shippingAmount",
+              "status",
+              "suborderId",
+              "taxAmount",
+              "total",
+              "vendorId",
+              "vendorName",
+              "vendorNetAmount"
+            ],
+            "properties": {
+              "suborderId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "vendorId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "vendorName": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "itemsSubtotal": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "discountAmount": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "shippingAmount": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "taxAmount": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "total": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "commissionRate": {
+                "type": "number"
+              },
+              "commissionAmount": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "vendorNetAmount": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "lineTotal",
+                    "productId",
+                    "productName",
+                    "quantity",
+                    "sku",
+                    "unitPrice",
+                    "variantId",
+                    "variantName"
+                  ],
+                  "properties": {
+                    "productId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "variantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "sku": {
+                      "type": "string"
+                    },
+                    "productName": {
+                      "type": "string"
+                    },
+                    "variantName": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "unitPrice": {
+                      "type": "number",
+                      "minimum": 0,
+                      "description": "decimal amount in the order currency, 2 fraction digits"
+                    },
+                    "lineTotal": {
+                      "type": "number",
+                      "minimum": 0,
+                      "description": "decimal amount in the order currency, 2 fraction digits"
+                    }
+                  }
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "reason": {
+          "type": "string",
+          "examples": [
+            "OUT_OF_STOCK",
+            "PAYMENT_DECLINED",
+            "CAPTURE_FAILED",
+            "STOCK_UNAVAILABLE_AFTER_PAYMENT",
+            "INVENTORY_TIMEOUT",
+            "CUSTOMER_REQUEST"
+          ],
+          "description": "open enumeration: known values OUT_OF_STOCK, PAYMENT_DECLINED, CAPTURE_FAILED, STOCK_UNAVAILABLE_AFTER_PAYMENT, INVENTORY_TIMEOUT, CUSTOMER_REQUEST"
+        }
+      },
+      "description": "Order snapshot including vendor suborders and the authoritative, server-calculated amounts."
+    }
+  },
+  "x-topic": "order.events",
+  "x-producer": "order-service",
+  "x-consumers": [
+    "vendor-service",
+    "notification-service",
+    "analytics-service",
+    "review-service"
+  ],
+  "x-key": "orderId"
+}

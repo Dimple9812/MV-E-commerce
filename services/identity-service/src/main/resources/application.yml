@@ -1,0 +1,52 @@
+server:
+  port: ${PORT:8081}
+  forward-headers-strategy: framework   # trust X-Forwarded-For from the gateway (services are not publicly exposed)
+
+spring:
+  application:
+    name: identity-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/identity_db}
+    username: ${DB_USERNAME:identity_svc}
+    password: ${DB_PASSWORD:}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 500ms
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+
+management:
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
+
+marketflow:
+  kafka:
+    produces: identity.user.events,platform.audit.events
+    consumes: vendor.events
+  mail:
+    mode: ${MAIL_MODE:log}          # smtp | log
+    from: ${MAIL_FROM:no-reply@marketflow.local}
+  identity:
+    issuer: ${JWT_ISSUER:https://marketflow.dev/identity}
+    audience: marketflow-api
+    access-token-ttl: ${ACCESS_TOKEN_TTL:15m}
+    refresh-token-ttl: ${REFRESH_TOKEN_TTL:7d}
+    jwt-private-key-pem: ${JWT_PRIVATE_KEY_PEM:}
+    bcrypt-strength: ${BCRYPT_STRENGTH:12}
+    max-failed-logins: 5
+    lock-duration: 15m
+    login-attempts-per-ip-per-minute: ${LOGIN_ATTEMPTS_PER_IP_PER_MINUTE:20}
+    password-reset-ttl: 30m
+    password-reset-url: ${PASSWORD_RESET_URL:http://localhost:3000/reset-password}
+    cookie:
+      name: mf_refresh
+      secure: ${REFRESH_COOKIE_SECURE:false}   # MUST be true behind HTTPS
+      path: /api/v1/auth
+    bootstrap-admin:
+      email: ${MARKETFLOW_BOOTSTRAP_ADMIN_EMAIL:}
+      password: ${MARKETFLOW_BOOTSTRAP_ADMIN_PASSWORD:}
+      full-name: Platform Admin

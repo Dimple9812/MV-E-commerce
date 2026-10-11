@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/vendor.events.VendorCommissionChanged.v1.schema.json",
+  "title": "VendorCommissionChanged v1",
+  "description": "Commission rate changed by an administrator.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "VendorCommissionChanged"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "businessName",
+        "commissionRate",
+        "contactEmail",
+        "ownerUserId",
+        "slug",
+        "status",
+        "vendorId",
+        "vendorVersion"
+      ],
+      "properties": {
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ownerUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "businessName": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "examples": [
+            "PENDING",
+            "APPROVED",
+            "REJECTED",
+            "SUSPENDED"
+          ],
+          "description": "open enumeration: known values PENDING, APPROVED, REJECTED, SUSPENDED"
+        },
+        "commissionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        },
+        "contactEmail": {
+          "type": "string",
+          "format": "email"
+        },
+        "vendorVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "description": "Full vendor snapshot; consumers keep projections and discard events whose vendorVersion is not newer."
+    }
+  },
+  "x-topic": "vendor.events",
+  "x-producer": "vendor-service",
+  "x-consumers": [
+    "identity-service",
+    "catalog-service",
+    "inventory-service",
+    "order-service",
+    "notification-service",
+    "analytics-service"
+  ],
+  "x-key": "vendorId"
+}

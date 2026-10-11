@@ -1,0 +1,45 @@
+groups:
+  - name: marketflow
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"marketflow-.*"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: "{{ $labels.application }} is not answering scrapes" }
+
+      - alert: HighErrorRate
+        expr: |
+          sum by (application) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            / sum by (application) (rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "{{ $labels.application }}: more than 5% of requests fail with 5xx" }
+
+      - alert: OutboxBacklog
+        expr: max by (application) (outbox_pending) > 100
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "{{ $labels.application }}: outbox has more than 100 unpublished events" }
+
+      - alert: OutboxEventsParked
+        expr: max by (application) (outbox_failed) > 0
+        for: 1m
+        labels: { severity: critical }
+        annotations: { summary: "{{ $labels.application }}: outbox events exhausted their retries; see docs/runbooks/outbox-failed.md" }
+
+      - alert: DeadLetters
+        expr: sum by (application) (increase(kafka_dlt_published_total[10m])) > 0
+        labels: { severity: warning }
+        annotations: { summary: "{{ $labels.application }} routed messages to a dead-letter topic; see docs/runbooks/dlt-replay.md" }
+
+      - alert: ConsumerLag
+        expr: max by (application, client_id) (kafka_consumer_fetch_manager_records_lag_max) > 1000
+        for: 10m
+        labels: { severity: warning }
+        annotations: { summary: "{{ $labels.application }}: consumer is more than 1000 records behind" }
+
+      - alert: SagasNeedReconciliation
+        expr: max(saga_instances{state="RECONCILIATION_REQUIRED"}) > 0
+        for: 5m
+        labels: { severity: critical }
+        annotations: { summary: "Checkout sagas waiting for manual reconciliation; see docs/runbooks/payment-reconciliation.md" }

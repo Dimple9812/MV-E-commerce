@@ -1,0 +1,21 @@
+{
+  "topic": "inventory.events",
+  "key": "150f5816-5d7b-4669-8349-8646dfcc728f",
+  "value": {
+    "eventId": "8b83a277-2ca5-4e9d-b112-eafb8da8cc82",
+    "payload": {
+      "reason": "CUSTOMER_CANCELLED",
+      "status": "RETURNED",
+      "orderId": "150f5816-5d7b-4669-8349-8646dfcc728f",
+      "reservationId": "f7324461-749b-4a3a-8320-5ce30ab4643e"
+    },
+    "producer": "inventory-service",
+    "eventType": "InventoryRestocked",
+    "occurredAt": "2026-10-11T07:01:04.759789670Z",
+    "aggregateId": "150f5816-5d7b-4669-8349-8646dfcc728f",
+    "causationId": "8c565cbc-5da2-48cc-9bb3-067b3753b08f",
+    "aggregateType": "Reservation",
+    "correlationId": "6b278d7a-db42-428e-9e08-5df1c8f4feeb",
+    "schemaVersion": 1
+  }
+}

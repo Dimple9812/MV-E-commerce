@@ -1,0 +1,25 @@
+{
+  "topic": "inventory.commands",
+  "key": "2b1341aa-5651-42ae-a039-f16b2237140c",
+  "value": {
+    "eventId": "8f670ea7-4578-4f2d-8366-379c7a431f42",
+    "payload": {
+      "lines": [
+        {
+          "sku": "KC-SKL-28",
+          "quantity": 1,
+          "variantId": "92d43d85-7328-45ed-b1c8-2f8401376a38"
+        }
+      ],
+      "orderId": "2b1341aa-5651-42ae-a039-f16b2237140c"
+    },
+    "producer": "order-service",
+    "eventType": "InventoryConfirmationRequested",
+    "occurredAt": "2026-10-11T01:53:54.094912117Z",
+    "aggregateId": "2b1341aa-5651-42ae-a039-f16b2237140c",
+    "causationId": "68f724e9-e4a2-40b1-8cce-c36d5ae652c9",
+    "aggregateType": "Order",
+    "correlationId": "ca03c319-b45e-40f1-a7fb-97088cf090b3",
+    "schemaVersion": 1
+  }
+}

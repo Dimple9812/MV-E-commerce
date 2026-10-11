@@ -1,0 +1,41 @@
+{
+  "topic": "catalog.product.events",
+  "key": "ac7be20f-d709-4812-97d8-225893f15f66",
+  "value": {
+    "eventId": "05dd6956-93a1-4061-830c-9f9ebff3eb5a",
+    "payload": {
+      "name": "Aurora Studio Headphones",
+      "slug": "aurora-studio-headphones",
+      "status": "PUBLISHED",
+      "currency": "USD",
+      "variants": [
+        {
+          "sku": "AUR-HP-BLK",
+          "name": "Matte Black",
+          "price": 149,
+          "active": true,
+          "variantId": "ad7a399c-ca81-4b59-9e90-bb5286163a96"
+        },
+        {
+          "sku": "AUR-HP-SND",
+          "name": "Sand",
+          "price": 149,
+          "active": true,
+          "variantId": "f5164d9d-bc15-4884-a8e9-4df0d26bdec3"
+        }
+      ],
+      "vendorId": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+      "productId": "ac7be20f-d709-4812-97d8-225893f15f66",
+      "categoryId": "10000000-0000-0000-0000-000000000011",
+      "maxPerOrder": 5,
+      "productVersion": 1
+    },
+    "producer": "catalog-service",
+    "eventType": "ProductPublished",
+    "occurredAt": "2026-10-11T01:53:08.881749277Z",
+    "aggregateId": "ac7be20f-d709-4812-97d8-225893f15f66",
+    "aggregateType": "Product",
+    "correlationId": "7aac7ebc-9049-45e1-b174-6f4f5d87ab22",
+    "schemaVersion": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "topic": "payment.commands",
+  "key": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+  "value": {
+    "eventId": "f33f3ad2-2da9-464f-891d-08b1d09ec0c2",
+    "payload": {
+      "amount": 160.92,
+      "orderId": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+      "currency": "USD"
+    },
+    "producer": "order-service",
+    "eventType": "PaymentCaptureRequested",
+    "occurredAt": "2026-10-11T01:53:36.829128993Z",
+    "aggregateId": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+    "causationId": "4f159e4f-8cf8-4c72-a472-155043334cb2",
+    "aggregateType": "Order",
+    "correlationId": "fa71a8ab-42ff-4e83-8a99-47dd76b08978",
+    "schemaVersion": 1
+  }
+}

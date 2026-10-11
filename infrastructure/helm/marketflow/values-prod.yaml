@@ -1,0 +1,26 @@
+# Production-like overlay. Secrets, hosts and the registry are environment-specific: override them at install.
+image:
+  pullPolicy: IfNotPresent
+global:
+  tracing:
+    sampling: "0.1"
+javaDefaults:
+  replicas: 3
+  resources:
+    requests: { cpu: 500m, memory: 768Mi }
+    limits: { memory: 1Gi }
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 65
+  pdb:
+    minAvailable: 2
+services:
+  analytics-service:
+    port: 8089
+    db: analytics_db
+    replicas: 2
+    autoscaling: { enabled: false }
+metrics:
+  serviceMonitor: true

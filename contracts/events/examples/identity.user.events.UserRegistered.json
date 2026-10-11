@@ -1,0 +1,20 @@
+{
+  "topic": "identity.user.events",
+  "key": "798922ce-c4ea-4fad-a37f-79e46cbbe923",
+  "value": {
+    "eventId": "ef61f9eb-de9a-4c41-bf2f-da646ba0fa8a",
+    "payload": {
+      "email": "aurora@demo.marketflow.local",
+      "userId": "798922ce-c4ea-4fad-a37f-79e46cbbe923",
+      "fullName": "Aurora Sound",
+      "registeredAt": "2026-10-11T01:53:05.210145485Z"
+    },
+    "producer": "identity-service",
+    "eventType": "UserRegistered",
+    "occurredAt": "2026-10-11T01:53:05.211888304Z",
+    "aggregateId": "798922ce-c4ea-4fad-a37f-79e46cbbe923",
+    "aggregateType": "User",
+    "correlationId": "f887e260-9d7c-4f99-839e-43eb815bc475",
+    "schemaVersion": 1
+  }
+}

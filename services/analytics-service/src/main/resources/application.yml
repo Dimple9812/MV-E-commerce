@@ -1,0 +1,15 @@
+server:
+  port: ${PORT:8089}
+
+spring:
+  application:
+    name: analytics-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/analytics_db}
+    username: ${DB_USERNAME:analytics_svc}
+    password: ${DB_PASSWORD:}
+
+marketflow:
+  kafka:
+    produces: ""
+    consumes: order.events,payment.events,inventory.events,vendor.events,platform.audit.events

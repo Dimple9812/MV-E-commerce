@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/payment.events.PaymentVoided.v1.schema.json",
+  "title": "PaymentVoided v1",
+  "description": "Authorisation released.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "PaymentVoided"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency",
+        "customerId",
+        "orderId",
+        "paymentId",
+        "status"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "paymentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "status": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "description": "provider result code, e.g. card_declined, timeout"
+        },
+        "refundId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "refundedAmount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        }
+      }
+    }
+  },
+  "x-topic": "payment.events",
+  "x-producer": "payment-service",
+  "x-consumers": [
+    "order-service",
+    "notification-service",
+    "analytics-service"
+  ],
+  "x-key": "orderId"
+}

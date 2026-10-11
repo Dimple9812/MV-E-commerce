@@ -1,0 +1,20 @@
+{
+  "topic": "inventory.events",
+  "key": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+  "value": {
+    "eventId": "ae8f446f-656d-42de-b274-7bbbc51cf715",
+    "payload": {
+      "status": "CONFIRMED",
+      "orderId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+      "reservationId": "7087c49b-dafe-4ce1-ba41-02347eb18130"
+    },
+    "producer": "inventory-service",
+    "eventType": "InventoryReservationConfirmed",
+    "occurredAt": "2026-10-11T01:53:32.875097867Z",
+    "aggregateId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+    "causationId": "dc8e9cef-310d-44cb-82d6-1888e06d6c7e",
+    "aggregateType": "Reservation",
+    "correlationId": "f7f67a15-f502-4caa-a87f-2dd2bd20068d",
+    "schemaVersion": 1
+  }
+}

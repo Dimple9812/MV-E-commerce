@@ -1,0 +1,24 @@
+# Only the gateway is reachable from the ingress controller; domain services accept traffic from inside the
+# release only. Egress is left open (databases and Kafka are external endpoints in most setups).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: marketflow-internal
+  labels:
+    {{- include "marketflow.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchExpressions:
+      - { key: app.kubernetes.io/name, operator: NotIn, values: [gateway-service, frontend] }
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+        # Prometheus scrapes from its own namespace; adjust to your monitoring namespace label
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring

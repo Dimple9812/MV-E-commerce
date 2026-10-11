@@ -1,0 +1,7 @@
+apiVersion: v2
+name: marketflow
+description: MarketFlow multi-vendor marketplace (gateway, nine domain services and the web frontend)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords: [marketplace, spring-boot, kafka, saga]

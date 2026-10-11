@@ -1,0 +1,26 @@
+# Small single-replica footprint for a local cluster (kind, k3d, minikube).
+image:
+  registry: marketflow           # images loaded locally, e.g. `kind load docker-image marketflow/order-service:dev`
+  tag: dev
+  pullPolicy: Never
+global:
+  tracing:
+    sampling: "1.0"
+javaDefaults:
+  replicas: 1
+  resources:
+    requests: { cpu: 100m, memory: 384Mi }
+    limits: { memory: 640Mi }
+  autoscaling:
+    enabled: false
+  pdb:
+    minAvailable: 0
+frontend:
+  replicas: 1
+catalogImages:
+  accessMode: ReadWriteOnce
+  size: 1Gi
+ingress:
+  host: marketflow.localtest.me
+  tls:
+    enabled: false

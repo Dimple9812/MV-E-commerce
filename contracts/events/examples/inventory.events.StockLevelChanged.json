@@ -1,0 +1,24 @@
+{
+  "topic": "inventory.events",
+  "key": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+  "value": {
+    "eventId": "f5f00c3a-ad0c-4c76-ac4c-59614a4fd63d",
+    "payload": {
+      "sku": "AUR-HP-BLK",
+      "sold": 0,
+      "reserved": 0,
+      "vendorId": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+      "available": 25,
+      "productId": "ac7be20f-d709-4812-97d8-225893f15f66",
+      "variantId": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+      "stockVersion": 1
+    },
+    "producer": "inventory-service",
+    "eventType": "StockLevelChanged",
+    "occurredAt": "2026-10-11T01:53:09.284541770Z",
+    "aggregateId": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+    "aggregateType": "InventoryItem",
+    "correlationId": "443cda75-9420-4643-b553-d381b8f6dde4",
+    "schemaVersion": 1
+  }
+}

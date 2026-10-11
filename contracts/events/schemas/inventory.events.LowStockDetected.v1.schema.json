@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/inventory.events.LowStockDetected.v1.schema.json",
+  "title": "LowStockDetected v1",
+  "description": "Available stock crossed the seller's threshold downwards.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "LowStockDetected"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "available",
+        "productId",
+        "productName",
+        "sku",
+        "threshold",
+        "variantId",
+        "vendorId"
+      ],
+      "properties": {
+        "variantId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "productId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "sku": {
+          "type": "string"
+        },
+        "productName": {
+          "type": "string"
+        },
+        "available": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "x-topic": "inventory.events",
+  "x-producer": "inventory-service",
+  "x-consumers": [
+    "notification-service",
+    "analytics-service"
+  ],
+  "x-key": "orderId (reservation events) or variantId (stock events)"
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/payment.commands.PaymentAuthorizationRequested.v1.schema.json",
+  "title": "PaymentAuthorizationRequested v1",
+  "description": "Saga step: authorise the order total.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "PaymentAuthorizationRequested"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency",
+        "customerId",
+        "orderId",
+        "paymentToken"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "paymentToken": {
+          "type": "string",
+          "description": "sandbox/provider token, never card data"
+        }
+      }
+    }
+  },
+  "x-topic": "payment.commands",
+  "x-producer": "order-service",
+  "x-consumers": [
+    "payment-service"
+  ],
+  "x-key": "orderId"
+}

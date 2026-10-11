@@ -1,0 +1,47 @@
+server:
+  port: ${PORT:8086}
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/payment_db}
+    username: ${DB_USERNAME:payment_svc}
+    password: ${DB_PASSWORD:}
+
+resilience4j:
+  timelimiter:
+    instances:
+      provider:
+        timeout-duration: ${PROVIDER_TIMEOUT:3s}
+        cancel-running-future: true
+  circuitbreaker:
+    instances:
+      provider:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 80
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        record-exceptions:
+          - com.marketflow.payment.provider.ProviderTimeoutException
+  bulkhead:
+    instances:
+      provider:
+        max-concurrent-calls: 20
+        max-wait-duration: 200ms
+
+marketflow:
+  kafka:
+    produces: payment.events,platform.audit.events
+    consumes: payment.commands
+  payment:
+    # REQUIRED: shared secret for webhook HMAC signatures (set via PAYMENT_WEBHOOK_SECRET)
+    webhook-secret: ${PAYMENT_WEBHOOK_SECRET}
+    reconciliation-interval: 5s
+    sandbox:
+      webhook-url: ${SANDBOX_WEBHOOK_URL:http://localhost:${server.port}/api/v1/payments/webhooks/sandbox}
+      webhook-poll: 1s

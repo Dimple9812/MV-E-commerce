@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/inventory.events.InventoryReserved.v1.schema.json",
+  "title": "InventoryReserved v1",
+  "description": "All lines reserved until expiresAt.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "InventoryReserved"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "expiresAt",
+        "lines",
+        "orderId",
+        "reservationId"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reservationId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "quantity",
+              "sku",
+              "variantId"
+            ],
+            "properties": {
+              "variantId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sku": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    }
+  },
+  "x-topic": "inventory.events",
+  "x-producer": "inventory-service",
+  "x-consumers": [
+    "order-service"
+  ],
+  "x-key": "orderId (reservation events) or variantId (stock events)"
+}

@@ -1,0 +1,23 @@
+{
+  "topic": "order.events",
+  "key": "efc1175c-7eda-41de-ac36-f2b9420e6c7d",
+  "value": {
+    "eventId": "73fbf37c-755c-4889-9611-1bef0bf8e48c",
+    "payload": {
+      "orderId": "efc1175c-7eda-41de-ac36-f2b9420e6c7d",
+      "vendorId": "7e03c8c6-1ac1-45aa-be0b-044539939043",
+      "customerId": "c65535ee-67df-4e6c-8020-b4fdd5f2cd13",
+      "productIds": [
+        "02db0283-fd5b-4707-a931-22674f1e3326"
+      ],
+      "suborderId": "d164faf8-780f-439b-9782-f9ccb7e45e96"
+    },
+    "producer": "order-service",
+    "eventType": "SuborderDelivered",
+    "occurredAt": "2026-10-11T08:54:15.658408258Z",
+    "aggregateId": "efc1175c-7eda-41de-ac36-f2b9420e6c7d",
+    "aggregateType": "Order",
+    "correlationId": "5bf57170-9fbf-43e0-a42c-7041d9bc3e50",
+    "schemaVersion": 1
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "topic": "order.events",
+  "key": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+  "value": {
+    "eventId": "c3f840ec-6784-4458-8fda-cb87c1a8e8de",
+    "payload": {
+      "status": "PENDING",
+      "orderId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+      "currency": "USD",
+      "taxTotal": 35.28,
+      "suborders": [
+        {
+          "items": [
+            {
+              "sku": "AUR-HP-BLK",
+              "quantity": 1,
+              "lineTotal": 149,
+              "productId": "ac7be20f-d709-4812-97d8-225893f15f66",
+              "unitPrice": 149,
+              "variantId": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+              "productName": "Aurora Studio Headphones",
+              "variantName": "Matte Black"
+            }
+          ],
+          "total": 160.92,
+          "status": "PENDING",
+          "vendorId": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+          "taxAmount": 11.92,
+          "suborderId": "f98ae208-34c1-417f-b924-37e0fef49d64",
+          "vendorName": "Aurora Sound Co.",
+          "itemsSubtotal": 149,
+          "commissionRate": 0.1,
+          "discountAmount": 0,
+          "shippingAmount": 0,
+          "vendorNetAmount": 134.1,
+          "commissionAmount": 14.9
+        },
+        {
+          "items": [
+            {
+              "sku": "KC-SKL-28",
+              "quantity": 1,
+              "lineTotal": 54,
+              "productId": "306d9231-2b2a-40e6-a821-b7b87dea85f7",
+              "unitPrice": 54,
+              "variantId": "92d43d85-7328-45ed-b1c8-2f8401376a38",
+              "productName": "Carbon Steel Skillet 28cm",
+              "variantName": "28 cm"
+            }
+          ],
+          "total": 58.32,
+          "status": "PENDING",
+          "vendorId": "516d288e-17cd-4800-abc8-1681a2a1b6d3",
+          "taxAmount": 4.32,
+          "suborderId": "4475b717-107c-4555-a59d-cf1f08f58a50",
+          "vendorName": "Kitchen & Co",
+          "itemsSubtotal": 54,
+          "commissionRate": 0.1,
+          "discountAmount": 0,
+          "shippingAmount": 0,
+          "vendorNetAmount": 48.6,
+          "commissionAmount": 5.4
+        },
+        {
+          "items": [
+            {
+              "sku": "NW-RTR-43",
+              "quantity": 2,
+              "lineTotal": 238,
+              "productId": "b9fb329d-5c80-4041-9179-1f0aafed0fff",
+              "unitPrice": 119,
+              "variantId": "b555bfdd-bee3-4337-9af1-e95c0884b162",
+              "productName": "Ridge Trail Running Shoe",
+              "variantName": "EU 43"
+            }
+          ],
+          "total": 257.04,
+          "status": "PENDING",
+          "vendorId": "65c1a6b1-5cfc-448c-874e-92db8efdb171",
+          "taxAmount": 19.04,
+          "suborderId": "4724adad-d513-4c25-9c92-b6e1465f1685",
+          "vendorName": "Northwind Outfitters",
+          "itemsSubtotal": 238,
+          "commissionRate": 0.1,
+          "discountAmount": 0,
+          "shippingAmount": 0,
+          "vendorNetAmount": 214.2,
+          "commissionAmount": 23.8
+        }
+      ],
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b",
+      "totalAmount": 476.28,
+      "wasConfirmed": false,
+      "discountTotal": 0,
+      "itemsSubtotal": 441,
+      "shippingTotal": 0
+    },
+    "producer": "order-service",
+    "eventType": "OrderCreated",
+    "occurredAt": "2026-10-11T01:53:30.932162222Z",
+    "aggregateId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+    "aggregateType": "Order",
+    "correlationId": "f7f67a15-f502-4caa-a87f-2dd2bd20068d",
+    "schemaVersion": 1
+  }
+}

@@ -1,0 +1,33 @@
+{{- if .Values.ingress.enabled }}
+# The browser talks to one host: the SPA at / and the API at /api (routed straight to the gateway, which owns
+# authentication, rate limiting and routing to the domain services).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: marketflow
+  labels:
+    {{- include "marketflow.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts: [{{ .Values.ingress.host | quote }}]
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service: { name: gateway-service, port: { name: http } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: frontend, port: { name: http } }
+{{- end }}

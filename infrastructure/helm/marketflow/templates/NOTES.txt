@@ -1,0 +1,13 @@
+MarketFlow {{ .Chart.AppVersion }} installed as "{{ .Release.Name }}".
+
+Before the pods become ready these secrets must exist in namespace {{ .Release.Namespace }}:
+  {{ .Values.secrets.database }}  keys: identity-password vendor-password catalog-password inventory-password
+                                  order-password payment-password notification-password review-password analytics-password
+  {{ .Values.secrets.payment }}   key:  webhook-secret
+  {{ .Values.secrets.jwt }}       key:  private-key.pem
+External dependencies: PostgreSQL at {{ .Values.global.postgresHost }}, Kafka at {{ .Values.global.kafkaBootstrapServers }},
+Redis at {{ .Values.global.redisHost }}.
+
+{{- if .Values.ingress.enabled }}
+Open: http{{ if .Values.ingress.tls.enabled }}s{{ end }}://{{ .Values.ingress.host }}/
+{{- end }}

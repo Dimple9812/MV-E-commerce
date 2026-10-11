@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/platform.audit.events.AuditRecorded.v1.schema.json",
+  "title": "AuditRecorded v1",
+  "description": "Security-relevant or administrative action.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "AuditRecorded"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "action",
+        "outcome",
+        "resourceId",
+        "resourceType",
+        "service"
+      ],
+      "properties": {
+        "service": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "resourceType": {
+          "type": "string"
+        },
+        "resourceId": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "examples": [
+            "SUCCESS",
+            "FAILURE"
+          ],
+          "description": "open enumeration: known values SUCCESS, FAILURE"
+        },
+        "actorId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actorRole": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "details": {
+          "type": "object",
+          "description": "non-sensitive context; never passwords, tokens or card data"
+        }
+      }
+    }
+  },
+  "x-topic": "platform.audit.events",
+  "x-producer": "every service",
+  "x-consumers": [
+    "analytics-service"
+  ],
+  "x-key": "resourceId"
+}

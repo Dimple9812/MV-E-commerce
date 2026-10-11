@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/order.events.SuborderDelivered.v1.schema.json",
+  "title": "SuborderDelivered v1",
+  "description": "A suborder was delivered; its products become reviewable.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "SuborderDelivered"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "customerId",
+        "orderId",
+        "productIds",
+        "suborderId",
+        "vendorId"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "suborderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "productIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 1
+        }
+      }
+    }
+  },
+  "x-topic": "order.events",
+  "x-producer": "order-service",
+  "x-consumers": [
+    "review-service",
+    "analytics-service"
+  ],
+  "x-key": "orderId"
+}

@@ -1,0 +1,16 @@
+# Uploaded product images. ReadWriteMany so every catalog replica serves the same files; use object storage
+# (S3/GCS) behind the ImageStorage interface for a real deployment.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: catalog-images
+  labels:
+    {{- include "marketflow.labels" . | nindent 4 }}
+spec:
+  accessModes: [{{ .Values.catalogImages.accessMode }}]
+  {{- if .Values.catalogImages.storageClassName }}
+  storageClassName: {{ .Values.catalogImages.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.catalogImages.size }}

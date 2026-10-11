@@ -1,0 +1,24 @@
+{
+  "topic": "vendor.events",
+  "key": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+  "value": {
+    "eventId": "80b7bb44-034d-4a66-a41b-20a09729df4d",
+    "payload": {
+      "slug": "aurora-sound-co",
+      "status": "PENDING",
+      "vendorId": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+      "ownerUserId": "798922ce-c4ea-4fad-a37f-79e46cbbe923",
+      "businessName": "Aurora Sound Co.",
+      "contactEmail": "aurora@demo.marketflow.local",
+      "vendorVersion": 0,
+      "commissionRate": 0.1
+    },
+    "producer": "vendor-service",
+    "eventType": "VendorApplicationSubmitted",
+    "occurredAt": "2026-10-11T01:53:06.047564019Z",
+    "aggregateId": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+    "aggregateType": "Vendor",
+    "correlationId": "cdcef9e8-f63f-4941-9bcb-0f0120ca11fb",
+    "schemaVersion": 1
+  }
+}

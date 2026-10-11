@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/review.events.ReviewHidden.v1.schema.json",
+  "title": "ReviewHidden v1",
+  "description": "Moderator hid a review.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "ReviewHidden"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "customerId",
+        "productId",
+        "rating",
+        "reviewId",
+        "status"
+      ],
+      "properties": {
+        "reviewId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "productId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "rating": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "status": {
+          "type": "string",
+          "examples": [
+            "PUBLISHED",
+            "HIDDEN",
+            "DELETED"
+          ],
+          "description": "open enumeration: known values PUBLISHED, HIDDEN, DELETED"
+        }
+      }
+    }
+  },
+  "x-topic": "review.events",
+  "x-producer": "review-service",
+  "x-consumers": [
+    "analytics-service"
+  ],
+  "x-key": "productId"
+}

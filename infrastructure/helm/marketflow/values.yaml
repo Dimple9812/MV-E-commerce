@@ -1,0 +1,143 @@
+# Default values. Environment overlays: values-dev.yaml (single replica, small) and values-prod.yaml.
+# PostgreSQL, Kafka and Redis are external dependencies here (managed services in production, or separate
+# charts in a dev cluster); this chart deploys only MarketFlow's own workloads.
+
+image:
+  registry: ghcr.io/your-org          # where CI publishes images (see .github/workflows/ci.yml)
+  tag: ""                             # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# Non-secret configuration shared by every Java service.
+global:
+  kafkaBootstrapServers: kafka:9092
+  redisHost: redis
+  redisPort: "6379"
+  postgresHost: postgres
+  postgresPort: "5432"
+  jwtIssuer: https://marketflow.dev/identity
+  tracing:
+    enabled: true
+    sampling: "0.1"
+    otlpEndpoint: http://otel-collector:4318
+  logFormat: logstash
+
+# Secrets are never created by this chart. Create them out of band (External Secrets, Sealed Secrets, or
+# kubectl create secret) and reference them here. Keys expected in each secret are listed in the README.
+secrets:
+  database: marketflow-db            # keys: <service>-password, e.g. order-password
+  payment: marketflow-payment        # keys: webhook-secret
+  jwt: marketflow-jwt                # keys: private-key.pem
+  bootstrapAdmin: ""                 # optional; keys: email, password
+
+serviceAccount:
+  create: true
+  name: ""
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  fsGroup: 10001
+  seccompProfile: { type: RuntimeDefault }
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities: { drop: [ALL] }
+
+javaDefaults:
+  replicas: 2
+  resources:
+    requests: { cpu: 250m, memory: 512Mi }
+    limits: { memory: 768Mi }
+  javaToolOptions: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+  pdb:
+    minAvailable: 1
+
+# One entry per workload. `db` is the database name (user is <db without _db>_svc); `env` adds plain variables.
+services:
+  gateway-service:
+    port: 8080
+    managementPort: 8090
+    redis: true
+    env:
+      IDENTITY_URI: http://identity-service:8081
+      VENDOR_URI: http://vendor-service:8082
+      CATALOG_URI: http://catalog-service:8083
+      INVENTORY_URI: http://inventory-service:8084
+      ORDER_URI: http://order-service:8085
+      PAYMENT_URI: http://payment-service:8086
+      NOTIFICATION_URI: http://notification-service:8087
+      REVIEW_URI: http://review-service:8088
+      ANALYTICS_URI: http://analytics-service:8089
+  identity-service:
+    port: 8081
+    db: identity_db
+    redis: true
+    jwtKey: true
+    env:
+      MAIL_MODE: smtp
+      REFRESH_COOKIE_SECURE: "true"
+  vendor-service:
+    port: 8082
+    db: vendor_db
+  catalog-service:
+    port: 8083
+    db: catalog_db
+    redis: true
+    imagesVolume: true
+  inventory-service:
+    port: 8084
+    db: inventory_db
+  order-service:
+    port: 8085
+    db: order_db
+  payment-service:
+    port: 8086
+    db: payment_db
+    webhookSecret: true
+    env:
+      SANDBOX_WEBHOOK_URL: http://payment-service:8086
+  notification-service:
+    port: 8087
+    db: notification_db
+    env:
+      MAIL_MODE: smtp
+      NOTIFICATION_FAULT_INJECTION: "false"
+  review-service:
+    port: 8088
+    db: review_db
+  analytics-service:
+    port: 8089
+    db: analytics_db
+    autoscaling: { enabled: false }
+    replicas: 1
+
+frontend:
+  enabled: true
+  replicas: 2
+  port: 8080
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 128Mi }
+
+catalogImages:
+  storageClassName: ""
+  size: 5Gi
+  accessMode: ReadWriteMany   # shared by every catalog replica
+
+ingress:
+  enabled: true
+  className: nginx
+  host: marketflow.example.com
+  tls:
+    enabled: true
+    secretName: marketflow-tls
+  annotations: {}
+
+metrics:
+  serviceMonitor: false        # set true when the Prometheus Operator CRDs are installed

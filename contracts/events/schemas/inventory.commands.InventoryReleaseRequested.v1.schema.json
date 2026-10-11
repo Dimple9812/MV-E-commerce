@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/inventory.commands.InventoryReleaseRequested.v1.schema.json",
+  "title": "InventoryReleaseRequested v1",
+  "description": "Compensation: release a reservation (idempotent; tombstones a late reservation).",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "InventoryReleaseRequested"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "lines",
+        "orderId"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "quantity",
+              "sku",
+              "variantId"
+            ],
+            "properties": {
+              "variantId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sku": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "x-topic": "inventory.commands",
+  "x-producer": "order-service",
+  "x-consumers": [
+    "inventory-service"
+  ],
+  "x-key": "orderId"
+}

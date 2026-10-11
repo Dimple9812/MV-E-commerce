@@ -1,0 +1,24 @@
+{
+  "topic": "payment.events",
+  "key": "eece956f-5d92-4cf5-b4ca-e73b58c1b3be",
+  "value": {
+    "eventId": "b3057400-3bfb-4739-a3d7-e77cb47c3a26",
+    "payload": {
+      "code": "card_declined",
+      "amount": 58.32,
+      "status": "DECLINED",
+      "orderId": "eece956f-5d92-4cf5-b4ca-e73b58c1b3be",
+      "currency": "USD",
+      "paymentId": "e19b03a5-d329-46e1-b6eb-8dde98ac575c",
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b"
+    },
+    "producer": "payment-service",
+    "eventType": "PaymentFailed",
+    "occurredAt": "2026-10-11T01:53:59.613092045Z",
+    "aggregateId": "eece956f-5d92-4cf5-b4ca-e73b58c1b3be",
+    "causationId": "07c846d6-96f0-4ef4-97cd-2d59e7b3f33e",
+    "aggregateType": "Payment",
+    "correlationId": "bf803833-a8be-4d08-aa25-0c01e41742eb",
+    "schemaVersion": 1
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "marketflow-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Operational scripts: demo seeding, API end-to-end checks, dead-letter replay",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "kafkajs": "2.2.4"
+  }
+}

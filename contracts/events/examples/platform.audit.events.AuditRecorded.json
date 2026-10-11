@@ -1,0 +1,27 @@
+{
+  "topic": "platform.audit.events",
+  "key": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+  "value": {
+    "eventId": "bb5eee3c-9d4f-4b2a-a66e-fa08c71fe6e5",
+    "payload": {
+      "action": "inventory.adjusted",
+      "actorId": "798922ce-c4ea-4fad-a37f-79e46cbbe923",
+      "details": {
+        "delta": 25,
+        "reason": "initial stock (demo seed)"
+      },
+      "outcome": "SUCCESS",
+      "service": "inventory-service",
+      "actorRole": "VENDOR",
+      "resourceId": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+      "resourceType": "InventoryItem"
+    },
+    "producer": "inventory-service",
+    "eventType": "AuditRecorded",
+    "occurredAt": "2026-10-11T01:53:09.294318664Z",
+    "aggregateId": "ad7a399c-ca81-4b59-9e90-bb5286163a96",
+    "aggregateType": "InventoryItem",
+    "correlationId": "443cda75-9420-4643-b553-d381b8f6dde4",
+    "schemaVersion": 1
+  }
+}

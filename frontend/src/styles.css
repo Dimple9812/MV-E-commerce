@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens (RGB triplets so Tailwind can apply alpha). */
+:root {
+  --ink: 23 35 63;        /* harbour ink  #17233F */
+  --ink-soft: 44 60 98;
+  --mist: 243 245 248;    /* page        #F3F5F8 */
+  --surface: 255 255 255;
+  --line: 222 227 235;
+  --slate: 90 100 120;    /* secondary text #5A6478 */
+  --tag: 244 197 66;      /* price tag   #F4C542 */
+  --tag-deep: 199 150 18;
+  --leaf: 46 138 100;     /* success     #2E8A64 */
+  --brick: 184 68 46;     /* error       #B8442E */
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink: 226 232 244;
+    --ink-soft: 190 202 226;
+    --mist: 14 21 38;
+    --surface: 22 31 52;
+    --line: 45 57 84;
+    --slate: 150 162 186;
+    --tag: 244 197 66;
+    --tag-deep: 214 166 30;
+    --leaf: 88 190 146;
+    --brick: 236 118 94;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  html {
+    @apply bg-mist text-ink antialiased;
+    font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'tnum' 0;
+  }
+  body {
+    @apply min-h-screen bg-mist;
+  }
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+  :focus-visible {
+    outline: 3px solid rgb(var(--tag));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary { @apply btn bg-ink text-mist hover:bg-ink-soft; }
+  .btn-accent { @apply btn bg-tag text-[#17233F] hover:bg-tag-deep; }
+  .btn-quiet { @apply btn border border-line bg-surface text-ink hover:border-ink/40; }
+  .btn-danger { @apply btn border border-brick/40 bg-surface text-brick hover:bg-brick hover:text-white; }
+  .input {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-slate/70 focus:border-ink focus:outline-none;
+  }
+  .panel { @apply rounded-xl border border-line bg-surface; }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .data-table { @apply w-full border-collapse text-left text-sm; }
+  .data-table th { @apply border-b border-line px-4 py-2.5 text-xs font-semibold text-slate; }
+  .data-table td { @apply border-b border-line px-4 py-3 align-top; }
+  .data-table tbody tr:last-child td { @apply border-b-0; }
+  .data-table tbody tr:hover { @apply bg-mist/60; }
+  .table-wrap { @apply panel relative overflow-x-auto; }
+
+  /* The signature element: a hang-tag price label with a punched hole. */
+  .price-tag {
+    @apply relative inline-flex items-center rounded-tag bg-tag pl-6 pr-3 font-display font-bold text-[#17233F];
+    font-variant-numeric: tabular-nums;
+  }
+  .price-tag::before {
+    content: '';
+    position: absolute;
+    left: 0.55rem;
+    top: 50%;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 9999px;
+    transform: translateY(-50%);
+    background: rgb(var(--surface));
+    box-shadow: inset 0 0 0 1.5px rgb(23 35 63 / 0.35);
+  }
+}

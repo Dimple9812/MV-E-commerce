@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/identity.user.events.UserRegistered.v1.schema.json",
+  "title": "UserRegistered v1",
+  "description": "A customer account was created.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "UserRegistered"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "email",
+        "fullName",
+        "registeredAt",
+        "userId"
+      ],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "x-topic": "identity.user.events",
+  "x-producer": "identity-service",
+  "x-consumers": [
+    "notification-service"
+  ],
+  "x-key": "userId"
+}

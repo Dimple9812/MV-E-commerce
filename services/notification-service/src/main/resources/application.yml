@@ -1,0 +1,38 @@
+server:
+  port: ${PORT:8087}
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/notification_db}
+    username: ${DB_USERNAME:notification_svc}
+    password: ${DB_PASSWORD:}
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    properties:
+      mail.smtp.connectiontimeout: 3000
+      mail.smtp.timeout: 3000
+      mail.smtp.writetimeout: 3000
+
+management:
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
+
+marketflow:
+  kafka:
+    produces: platform.audit.events
+    # retry/DLT topics for these are created by @RetryableTopic
+    consumes: ""
+    # notification-service consumes through Spring retry topics, which create their own -notification-dlt topics
+    consumes-with-retry-topics: identity.user.events,vendor.events,order.events,inventory.events
+  mail:
+    mode: ${MAIL_MODE:log}
+    from: ${MAIL_FROM:MarketFlow <no-reply@marketflow.local>}
+  notification:
+    max-attempts: 4
+    initial-backoff-ms: 1000
+    max-backoff-ms: 10000
+    fault-injection: ${NOTIFICATION_FAULT_INJECTION:true}

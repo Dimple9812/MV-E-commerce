@@ -1,0 +1,311 @@
+# MarketFlow local development stack.
+#
+#   cp .env.example .env        # then replace every change-me value
+#   docker compose up --build -d
+#   node scripts/seed-demo.mjs  # optional demo sellers, products and customers
+#   docker compose down         # stop, keep data
+#   docker compose down -v      # stop and DELETE all volumes (databases, Kafka log, Grafana state)
+#
+# Kafka runs as a single KRaft node (combined broker + controller, no ZooKeeper). Topics are created by the
+# services at start-up (auto-creation is disabled, as it should be in production).
+
+name: marketflow
+
+x-restart: &restart
+  restart: unless-stopped
+
+x-java-env: &java-env
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  JWT_JWK_SET_URI: http://identity-service:8081/.well-known/jwks.json
+  JWT_ISSUER: ${JWT_ISSUER:-https://marketflow.dev/identity}
+  TRACING_ENABLED: ${TRACING_ENABLED:-true}
+  TRACING_SAMPLING: ${TRACING_SAMPLING:-1.0}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  LOG_FORMAT: ${LOG_FORMAT:-logstash}
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError
+
+x-java-deps: &java-deps
+  postgres: { condition: service_healthy }
+  kafka: { condition: service_healthy }
+
+x-java-limits: &java-limits
+  deploy:
+    resources:
+      limits: { memory: 640m }
+
+services:
+  # ---------------------------------------------------------------- infrastructure
+  postgres:
+    image: postgres:16-alpine
+    <<: *restart
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      IDENTITY_DB_PASSWORD: ${IDENTITY_DB_PASSWORD:?}
+      VENDOR_DB_PASSWORD: ${VENDOR_DB_PASSWORD:?}
+      CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD:?}
+      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD:?}
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD:?}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?}
+      REVIEW_DB_PASSWORD: ${REVIEW_DB_PASSWORD:?}
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports: ["127.0.0.1:5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='analytics_db'\" | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  kafka:
+    image: apache/kafka:3.9.1
+    <<: *restart
+    environment:
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:-MkU3OEVBNTcwNTJENDM2Qk}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    ports: ["127.0.0.1:9094:9094"]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 20s
+
+  redis:
+    image: redis:7.4-alpine
+    <<: *restart
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    ports: ["127.0.0.1:6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    <<: *restart
+    ports: ["127.0.0.1:8025:8025"]   # web UI; SMTP stays on the internal network (1025)
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    <<: *restart
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports: ["127.0.0.1:16686:16686"]
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    <<: *restart
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d"]
+    volumes:
+      - ./infrastructure/prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports: ["127.0.0.1:9090:9090"]
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    <<: *restart
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports: ["127.0.0.1:3001:3000"]
+    depends_on: [prometheus]
+
+  # ---------------------------------------------------------------- application services
+  identity-service:
+    build: { context: ., dockerfile: services/identity-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/identity_db
+      DB_USERNAME: identity_svc
+      DB_PASSWORD: ${IDENTITY_DB_PASSWORD}
+      REDIS_HOST: redis
+      # Leave JWT_PRIVATE_KEY_PEM empty in development: identity generates an ephemeral RSA key at start-up
+      # (sessions end when it restarts). Production must supply a persistent key from a secret store.
+      JWT_PRIVATE_KEY_PEM: ${JWT_PRIVATE_KEY_PEM:-}
+      MARKETFLOW_BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      MARKETFLOW_BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      MAIL_MODE: smtp
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      PASSWORD_RESET_URL: http://localhost:3000/reset-password
+    depends_on:
+      <<: *java-deps
+      redis: { condition: service_healthy }
+
+  vendor-service:
+    build: { context: ., dockerfile: services/vendor-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/vendor_db
+      DB_USERNAME: vendor_svc
+      DB_PASSWORD: ${VENDOR_DB_PASSWORD}
+    depends_on:
+      <<: *java-deps
+      identity-service: { condition: service_healthy }
+
+  catalog-service:
+    build: { context: ., dockerfile: services/catalog-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/catalog_db
+      DB_USERNAME: catalog_svc
+      DB_PASSWORD: ${CATALOG_DB_PASSWORD}
+      REDIS_HOST: redis
+      IMAGE_DIR: /data/images
+    volumes:
+      - catalog-images:/data/images
+    depends_on:
+      <<: *java-deps
+      redis: { condition: service_healthy }
+      identity-service: { condition: service_healthy }
+
+  inventory-service:
+    build: { context: ., dockerfile: services/inventory-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/inventory_db
+      DB_USERNAME: inventory_svc
+      DB_PASSWORD: ${INVENTORY_DB_PASSWORD}
+    depends_on:
+      <<: *java-deps
+      identity-service: { condition: service_healthy }
+
+  order-service:
+    build: { context: ., dockerfile: services/order-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/order_db
+      DB_USERNAME: order_svc
+      DB_PASSWORD: ${ORDER_DB_PASSWORD}
+    depends_on:
+      <<: *java-deps
+      identity-service: { condition: service_healthy }
+
+  payment-service:
+    build: { context: ., dockerfile: services/payment-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/payment_db
+      DB_USERNAME: payment_svc
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:?set PAYMENT_WEBHOOK_SECRET in .env}
+      SANDBOX_WEBHOOK_URL: http://payment-service:8086
+    depends_on:
+      <<: *java-deps
+      identity-service: { condition: service_healthy }
+
+  notification-service:
+    build: { context: ., dockerfile: services/notification-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/notification_db
+      DB_USERNAME: notification_svc
+      DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
+      MAIL_MODE: smtp
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      # "+bounce" / "+flaky" recipient tags simulate delivery failures (retry and DLT demos); off in production.
+      NOTIFICATION_FAULT_INJECTION: ${NOTIFICATION_FAULT_INJECTION:-true}
+    depends_on:
+      <<: *java-deps
+      identity-service: { condition: service_healthy }
+
+  review-service:
+    build: { context: ., dockerfile: services/review-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/review_db
+      DB_USERNAME: review_svc
+      DB_PASSWORD: ${REVIEW_DB_PASSWORD}
+    depends_on:
+      <<: *java-deps
+      identity-service: { condition: service_healthy }
+
+  analytics-service:
+    build: { context: ., dockerfile: services/analytics-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/analytics_db
+      DB_USERNAME: analytics_svc
+      DB_PASSWORD: ${ANALYTICS_DB_PASSWORD}
+    depends_on:
+      <<: *java-deps
+      identity-service: { condition: service_healthy }
+
+  gateway-service:
+    build: { context: ., dockerfile: services/gateway-service/Dockerfile }
+    <<: [*restart, *java-limits]
+    environment:
+      JWT_JWK_SET_URI: http://identity-service:8081/.well-known/jwks.json
+      JWT_ISSUER: ${JWT_ISSUER:-https://marketflow.dev/identity}
+      REDIS_HOST: redis
+      IDENTITY_URI: http://identity-service:8081
+      VENDOR_URI: http://vendor-service:8082
+      CATALOG_URI: http://catalog-service:8083
+      INVENTORY_URI: http://inventory-service:8084
+      ORDER_URI: http://order-service:8085
+      PAYMENT_URI: http://payment-service:8086
+      NOTIFICATION_URI: http://notification-service:8087
+      REVIEW_URI: http://review-service:8088
+      ANALYTICS_URI: http://analytics-service:8089
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
+      TRACING_ENABLED: ${TRACING_ENABLED:-true}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      LOG_FORMAT: ${LOG_FORMAT:-logstash}
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      redis: { condition: service_healthy }
+      identity-service: { condition: service_healthy }
+
+  frontend:
+    build: { context: ./frontend }
+    <<: *restart
+    environment:
+      GATEWAY_UPSTREAM: http://gateway-service:8080
+    ports: ["127.0.0.1:3000:8080"]
+    depends_on:
+      gateway-service: { condition: service_healthy }
+
+volumes:
+  pg-data:
+  kafka-data:
+  prometheus-data:
+  grafana-data:
+  catalog-images:

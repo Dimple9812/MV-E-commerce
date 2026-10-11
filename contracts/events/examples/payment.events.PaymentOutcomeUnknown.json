@@ -1,0 +1,24 @@
+{
+  "topic": "payment.events",
+  "key": "273569d9-ae1b-4e65-babd-17df066b5018",
+  "value": {
+    "eventId": "9a0e8087-6704-41e9-8ccb-33e706b4ccae",
+    "payload": {
+      "code": "provider_timeout",
+      "amount": 160.92,
+      "status": "UNKNOWN",
+      "orderId": "273569d9-ae1b-4e65-babd-17df066b5018",
+      "currency": "USD",
+      "paymentId": "b45db8ea-d478-4405-8804-8196ea493123",
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b"
+    },
+    "producer": "payment-service",
+    "eventType": "PaymentOutcomeUnknown",
+    "occurredAt": "2026-10-11T07:00:52.030488490Z",
+    "aggregateId": "273569d9-ae1b-4e65-babd-17df066b5018",
+    "causationId": "29b0fab1-dac4-4d3c-9839-daafbac19311",
+    "aggregateType": "Payment",
+    "correlationId": "fb5ee5c9-2705-4fea-a0c8-b62336d3f471",
+    "schemaVersion": 1
+  }
+}

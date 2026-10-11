@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/catalog.product.events.ProductUpdated.v1.schema.json",
+  "title": "ProductUpdated v1",
+  "description": "Details, variants or images changed.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "ProductUpdated"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "categoryId",
+        "currency",
+        "maxPerOrder",
+        "name",
+        "productId",
+        "productVersion",
+        "slug",
+        "status",
+        "variants",
+        "vendorId"
+      ],
+      "properties": {
+        "productId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "categoryId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "examples": [
+            "DRAFT",
+            "PUBLISHED",
+            "ARCHIVED",
+            "BLOCKED",
+            "DELETED"
+          ],
+          "description": "open enumeration: known values DRAFT, PUBLISHED, ARCHIVED, BLOCKED, DELETED"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "maxPerOrder": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "productVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "active",
+              "name",
+              "price",
+              "sku",
+              "variantId"
+            ],
+            "properties": {
+              "variantId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sku": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "price": {
+                "type": "number",
+                "minimum": 0,
+                "description": "decimal amount in the order currency, 2 fraction digits"
+              },
+              "active": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 0
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "priceChange": {
+          "type": "object",
+          "required": [
+            "newPrice",
+            "oldPrice",
+            "sku",
+            "variantId"
+          ],
+          "properties": {
+            "variantId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sku": {
+              "type": "string"
+            },
+            "oldPrice": {
+              "type": "number",
+              "minimum": 0,
+              "description": "decimal amount in the order currency, 2 fraction digits"
+            },
+            "newPrice": {
+              "type": "number",
+              "minimum": 0,
+              "description": "decimal amount in the order currency, 2 fraction digits"
+            }
+          },
+          "description": "present only on ProductPriceChanged"
+        }
+      },
+      "description": "Full product snapshot; consumers apply it only when productVersion is newer than what they hold."
+    }
+  },
+  "x-topic": "catalog.product.events",
+  "x-producer": "catalog-service",
+  "x-consumers": [
+    "inventory-service",
+    "order-service"
+  ],
+  "x-key": "productId"
+}

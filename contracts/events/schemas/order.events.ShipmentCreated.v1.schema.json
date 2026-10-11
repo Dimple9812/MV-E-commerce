@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/order.events.ShipmentCreated.v1.schema.json",
+  "title": "ShipmentCreated v1",
+  "description": "A seller shipped their suborder.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "ShipmentCreated"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "carrier",
+        "customerId",
+        "orderId",
+        "suborderId",
+        "trackingNumber",
+        "vendorId"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "suborderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "carrier": {
+          "type": "string"
+        },
+        "trackingNumber": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "x-topic": "order.events",
+  "x-producer": "order-service",
+  "x-consumers": [
+    "notification-service",
+    "analytics-service"
+  ],
+  "x-key": "orderId"
+}

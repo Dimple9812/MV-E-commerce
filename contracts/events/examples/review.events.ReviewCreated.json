@@ -1,0 +1,21 @@
+{
+  "topic": "review.events",
+  "key": "02db0283-fd5b-4707-a931-22674f1e3326",
+  "value": {
+    "eventId": "0403b68a-1b64-45aa-af13-047b3ce4c4c5",
+    "payload": {
+      "rating": 5,
+      "status": "PUBLISHED",
+      "reviewId": "80d9dfe7-c992-4fef-a863-3ede1c920c3a",
+      "productId": "02db0283-fd5b-4707-a931-22674f1e3326",
+      "customerId": "c65535ee-67df-4e6c-8020-b4fdd5f2cd13"
+    },
+    "producer": "review-service",
+    "eventType": "ReviewCreated",
+    "occurredAt": "2026-10-11T08:54:16.005706317Z",
+    "aggregateId": "02db0283-fd5b-4707-a931-22674f1e3326",
+    "aggregateType": "Review",
+    "correlationId": "3b3416d6-b14b-4df1-b336-c6d4d8ac4938",
+    "schemaVersion": 1
+  }
+}

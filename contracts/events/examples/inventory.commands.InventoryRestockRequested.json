@@ -1,0 +1,25 @@
+{
+  "topic": "inventory.commands",
+  "key": "150f5816-5d7b-4669-8349-8646dfcc728f",
+  "value": {
+    "eventId": "8c565cbc-5da2-48cc-9bb3-067b3753b08f",
+    "payload": {
+      "lines": [
+        {
+          "sku": "NW-RTR-43",
+          "quantity": 1,
+          "variantId": "b555bfdd-bee3-4337-9af1-e95c0884b162"
+        }
+      ],
+      "reason": "CUSTOMER_CANCELLED",
+      "orderId": "150f5816-5d7b-4669-8349-8646dfcc728f"
+    },
+    "producer": "order-service",
+    "eventType": "InventoryRestockRequested",
+    "occurredAt": "2026-10-11T07:01:04.309317013Z",
+    "aggregateId": "150f5816-5d7b-4669-8349-8646dfcc728f",
+    "aggregateType": "Order",
+    "correlationId": "6b278d7a-db42-428e-9e08-5df1c8f4feeb",
+    "schemaVersion": 1
+  }
+}

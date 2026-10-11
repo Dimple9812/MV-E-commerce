@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/identity.user.events.UserStatusChanged.v1.schema.json",
+  "title": "UserStatusChanged v1",
+  "description": "An administrator activated or deactivated the account.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "UserStatusChanged"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "status",
+        "userId"
+      ],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string",
+          "examples": [
+            "ACTIVE",
+            "DEACTIVATED"
+          ],
+          "description": "open enumeration: known values ACTIVE, DEACTIVATED"
+        }
+      }
+    }
+  },
+  "x-topic": "identity.user.events",
+  "x-producer": "identity-service",
+  "x-consumers": [
+    "notification-service"
+  ],
+  "x-key": "userId"
+}

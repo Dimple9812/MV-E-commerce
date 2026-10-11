@@ -1,0 +1,20 @@
+{
+  "topic": "order.events",
+  "key": "150f5816-5d7b-4669-8349-8646dfcc728f",
+  "value": {
+    "eventId": "1993e3c0-5622-4c97-a6d2-28c41cca628e",
+    "payload": {
+      "amount": 128.52,
+      "reason": "Ordered the wrong size",
+      "orderId": "150f5816-5d7b-4669-8349-8646dfcc728f",
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b"
+    },
+    "producer": "order-service",
+    "eventType": "RefundRequested",
+    "occurredAt": "2026-10-11T07:01:04.306775850Z",
+    "aggregateId": "150f5816-5d7b-4669-8349-8646dfcc728f",
+    "aggregateType": "Order",
+    "correlationId": "6b278d7a-db42-428e-9e08-5df1c8f4feeb",
+    "schemaVersion": 1
+  }
+}

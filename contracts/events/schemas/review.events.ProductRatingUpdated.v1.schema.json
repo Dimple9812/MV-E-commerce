@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/review.events.ProductRatingUpdated.v1.schema.json",
+  "title": "ProductRatingUpdated v1",
+  "description": "Recomputed aggregate rating of a product.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "ProductRatingUpdated"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "averageRating",
+        "productId",
+        "reviewCount"
+      ],
+      "properties": {
+        "productId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "averageRating": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "reviewCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "x-topic": "review.events",
+  "x-producer": "review-service",
+  "x-consumers": [
+    "catalog-service"
+  ],
+  "x-key": "productId"
+}

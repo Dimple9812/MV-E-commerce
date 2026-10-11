@@ -1,0 +1,177 @@
+{{- $root := . -}}
+{{- range $name, $svc := .Values.services }}
+{{- $d := $root.Values.javaDefaults }}
+{{- $replicas := $svc.replicas | default $d.replicas }}
+{{- $auto := $d.autoscaling }}
+{{- $autoEnabled := $auto.enabled }}
+{{- if and $svc.autoscaling (hasKey $svc.autoscaling "enabled") }}{{ $autoEnabled = $svc.autoscaling.enabled }}{{ end }}
+{{- $probePort := $svc.managementPort | default $svc.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "marketflow.labels" $root | nindent 4 }}
+    {{- include "marketflow.selector" (dict "name" $name "root" $root) | nindent 4 }}
+spec:
+  {{- if not $autoEnabled }}
+  replicas: {{ $replicas }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  selector:
+    matchLabels:
+      {{- include "marketflow.selector" (dict "name" $name "root" $root) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "marketflow.selector" (dict "name" $name "root" $root) | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ $probePort | quote }}
+        prometheus.io/path: /actuator/prometheus
+    spec:
+      serviceAccountName: {{ include "marketflow.serviceAccountName" $root }}
+      {{- with $root.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml $root.Values.podSecurityContext | nindent 8 }}
+      # Spring Boot drains in-flight requests on SIGTERM (graceful shutdown, 20 s per phase).
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: {{ $name }}
+          image: {{ include "marketflow.image" (dict "name" $name "root" $root) }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml $root.Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - { name: http, containerPort: {{ $svc.port }} }
+            {{- if $svc.managementPort }}
+            - { name: management, containerPort: {{ $svc.managementPort }} }
+            {{- end }}
+          envFrom:
+            - configMapRef: { name: marketflow-common }
+          env:
+            - { name: PORT, value: {{ $svc.port | quote }} }
+            - { name: JAVA_TOOL_OPTIONS, value: {{ $d.javaToolOptions | quote }} }
+            {{- if $svc.db }}
+            {{- $user := printf "%s_svc" (trimSuffix "_db" $svc.db) }}
+            - name: DB_URL
+              value: {{ printf "jdbc:postgresql://%s:%s/%s" $root.Values.global.postgresHost $root.Values.global.postgresPort $svc.db | quote }}
+            - { name: DB_USERNAME, value: {{ $user | quote }} }
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ $root.Values.secrets.database }}, key: {{ printf "%s-password" (trimSuffix "_db" $svc.db) }} }
+            {{- end }}
+            {{- if $svc.webhookSecret }}
+            - name: PAYMENT_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef: { name: {{ $root.Values.secrets.payment }}, key: webhook-secret }
+            {{- end }}
+            {{- if $svc.jwtKey }}
+            - name: JWT_PRIVATE_KEY_PEM
+              valueFrom:
+                secretKeyRef: { name: {{ $root.Values.secrets.jwt }}, key: private-key.pem }
+            {{- if $root.Values.secrets.bootstrapAdmin }}
+            - name: MARKETFLOW_BOOTSTRAP_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef: { name: {{ $root.Values.secrets.bootstrapAdmin }}, key: email }
+            - name: MARKETFLOW_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ $root.Values.secrets.bootstrapAdmin }}, key: password }
+            {{- end }}
+            {{- end }}
+            {{- if $svc.imagesVolume }}
+            - { name: IMAGE_DIR, value: /data/images }
+            {{- end }}
+            {{- range $k, $v := $svc.env }}
+            - { name: {{ $k }}, value: {{ $v | quote }} }
+            {{- end }}
+          # startup probe gives the JVM and Flyway time; liveness never checks dependencies (a DB outage must
+          # not restart every pod), readiness does (take the pod out of rotation instead).
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: {{ $probePort }} }
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: {{ $probePort }} }
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: {{ $probePort }} }
+            periodSeconds: 5
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec: { command: ["sh", "-c", "sleep 5"] }
+          resources:
+            {{- toYaml ($svc.resources | default $d.resources) | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            {{- if $svc.imagesVolume }}
+            - { name: images, mountPath: /data/images }
+            {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: { sizeLimit: 256Mi }
+        {{- if $svc.imagesVolume }}
+        - name: images
+          persistentVolumeClaim: { claimName: catalog-images }
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "marketflow.labels" $root | nindent 4 }}
+    {{- include "marketflow.selector" (dict "name" $name "root" $root) | nindent 4 }}
+spec:
+  selector:
+    {{- include "marketflow.selector" (dict "name" $name "root" $root) | nindent 4 }}
+  ports:
+    - { name: http, port: {{ $svc.port }}, targetPort: http }
+    {{- if $svc.managementPort }}
+    - { name: management, port: {{ $svc.managementPort }}, targetPort: management }
+    {{- end }}
+{{- if $autoEnabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "marketflow.labels" $root | nindent 4 }}
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: {{ $name }} }
+  minReplicas: {{ $auto.minReplicas }}
+  maxReplicas: {{ $auto.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: {{ $auto.targetCPUUtilizationPercentage }} }
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+{{- end }}
+{{- if gt (int $d.pdb.minAvailable) 0 }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "marketflow.labels" $root | nindent 4 }}
+spec:
+  minAvailable: {{ $d.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "marketflow.selector" (dict "name" $name "root" $root) | nindent 6 }}
+{{- end }}
+{{- end }}

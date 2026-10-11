@@ -1,0 +1,15 @@
+server:
+  port: ${PORT:8088}
+
+spring:
+  application:
+    name: review-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/review_db}
+    username: ${DB_USERNAME:review_svc}
+    password: ${DB_PASSWORD:}
+
+marketflow:
+  kafka:
+    produces: review.events,platform.audit.events
+    consumes: order.events

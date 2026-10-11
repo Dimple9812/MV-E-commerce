@@ -1,0 +1,36 @@
+server:
+  port: ${PORT:8085}
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/order_db}
+    username: ${DB_USERNAME:order_svc}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+
+marketflow:
+  kafka:
+    produces: order.events,inventory.commands,payment.commands,platform.audit.events
+    consumes: inventory.events,payment.events,catalog.product.events,vendor.events
+  order:
+    max-lines-per-order: 50
+    saga:
+      inventory-timeout: ${SAGA_INVENTORY_TIMEOUT:30s}
+      payment-timeout: ${SAGA_PAYMENT_TIMEOUT:60s}
+      capture-timeout: ${SAGA_CAPTURE_TIMEOUT:30s}
+      confirm-timeout: ${SAGA_CONFIRM_TIMEOUT:30s}
+      compensation-timeout: ${SAGA_COMPENSATION_TIMEOUT:30s}
+      reconciliation-interval: ${SAGA_RECONCILIATION_INTERVAL:2m}
+      max-attempts: 3
+      max-reconciliation-attempts: 15
+      scan-interval: 2s
+    pricing:
+      tax-rate: ${TAX_RATE:0.08}
+      flat-shipping: 4.99
+      free-shipping-threshold: 50.00
+      coupons:
+        WELCOME10: 0.10
+        SPRING15: 0.15

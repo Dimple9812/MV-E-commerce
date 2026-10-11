@@ -1,0 +1,192 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "checkout accepted": {
+                    "name": "checkout accepted",
+                    "path": "::checkout accepted",
+                    "id": "a9b063834fdf21203e5dddf9a5136497",
+                    "passes": 601,
+                    "fails": 0
+                }
+            }
+    },
+    "metrics": {
+        "iterations": {
+            "rate": 4.956591622701278,
+            "count": 601
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 21.2026875,
+            "max": 191.260402,
+            "p(90)": 43.591198399999996,
+            "p(95)": 52.88427764999995,
+            "avg": 25.660959168273042,
+            "min": 6.793632
+        },
+        "vus": {
+            "value": 2,
+            "min": 2,
+            "max": 6
+        },
+        "http_req_tls_handshaking": {
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_sending": {
+            "avg": 0.08368007068273102,
+            "min": 0.009566,
+            "med": 0.0325175,
+            "max": 5.186528,
+            "p(90)": 0.093554,
+            "p(95)": 0.23680054999999747
+        },
+        "http_req_receiving": {
+            "min": 0.021396,
+            "med": 0.5025005,
+            "max": 15.227071,
+            "p(90)": 1.8480210999999998,
+            "p(95)": 2.8432651499999895,
+            "avg": 0.8661869393574316
+        },
+        "http_req_blocked": {
+            "avg": 0.02422326867469878,
+            "min": 0.00313,
+            "med": 0.0085005,
+            "max": 4.677646,
+            "p(90)": 0.0131024,
+            "p(95)": 0.03854944999999998
+        },
+        "data_received": {
+            "count": 4786781,
+            "rate": 39477.73478253851
+        },
+        "iteration_duration": {
+            "p(95)": 1136.546813,
+            "avg": 890.6561590066553,
+            "min": 549.147536,
+            "med": 854.394789,
+            "max": 1404.471738,
+            "p(90)": 1113.131385
+        },
+        "http_req_waiting": {
+            "avg": 24.711092158232915,
+            "min": 6.367855,
+            "med": 20.420074999999997,
+            "max": 190.524277,
+            "p(90)": 42.36549349999999,
+            "p(95)": 51.4608803
+        },
+        "http_req_duration{endpoint:checkout}": {
+            "avg": 35.32858433610654,
+            "min": 15.81903,
+            "med": 30.19781,
+            "max": 191.260402,
+            "p(90)": 53.508321,
+            "p(95)": 63.599593,
+            "thresholds": {
+                "p(95)<800": false
+            }
+        },
+        "http_req_duration": {
+            "p(95)": 52.88427764999995,
+            "avg": 25.660959168273042,
+            "min": 6.793632,
+            "med": 21.2026875,
+            "max": 191.260402,
+            "p(90)": 43.591198399999996
+        },
+        "vus_max": {
+            "max": 20,
+            "value": 20,
+            "min": 20
+        },
+        "saga_completion_duration": {
+            "med": 854,
+            "max": 1405,
+            "p(90)": 1113,
+            "p(95)": 1136,
+            "avg": 890.4076539101497,
+            "min": 549,
+            "thresholds": {
+                "p(95)<5000": false
+            }
+        },
+        "orders_confirmed": {
+            "count": 601,
+            "rate": 4.956591622701278
+        },
+        "http_req_failed{endpoint:checkout}": {
+            "passes": 0,
+            "fails": 601,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_reqs": {
+            "count": 2490,
+            "rate": 20.53562918556769
+        },
+        "checks": {
+            "passes": 601,
+            "fails": 0,
+            "value": 1
+        },
+        "orders_unfinished": {
+            "count": 0,
+            "rate": 0,
+            "thresholds": {
+                "count==0": false
+            }
+        },
+        "http_req_connecting": {
+            "avg": 0.003882638554216867,
+            "min": 0,
+            "med": 0,
+            "max": 1.379168,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "data_sent": {
+            "count": 2632429,
+            "rate": 21710.275422222796
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 2490,
+            "value": 0
+        }
+    },
+    "setup_data": {
+        "tokens": [
+            "eyJraWQiOiJaMTZQVVlhczMyU2gwWlE3dms5TTR2MnBiTU9IazJBeTNGM3hqYVY3QlMwIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIxN2IzZWI1ZC02MjIyLTQwZjMtYWYwNy0wYWQ0ZGE2MmJhM2IiLCJhdWQiOiJtYXJrZXRmbG93LWFwaSIsIm5iZiI6MTc5MTcwNTc5Miwicm9sZXMiOlsiQ1VTVE9NRVIiXSwiaXNzIjoiaHR0cHM6Ly9tYXJrZXRmbG93LmRldi9pZGVudGl0eSIsIm5hbWUiOiJBZGEgTG92ZWxhY2UiLCJleHAiOjE3OTE3MDY2OTIsImlhdCI6MTc5MTcwNTc5MiwianRpIjoiMDA4NzFhOWMtODdhNC00NzVkLTkxOTktNWE2YWNkODE4YjA3IiwiZW1haWwiOiJhZGFAZGVtby5tYXJrZXRmbG93LmxvY2FsIn0.njKzB7ccbaPa6yg1AnplyovA8SRykO7ECO9Tr8-r8CbQBbQ2FrrlWJZ4O7fI2RcZMdRwGtq4JQqu5sad6pJ03CAyqH0okXEaMVeu6SrctEVY7ipgnuLoCPEw4kJGeVxMbKVrWvOpzInJiTqgDwNbKmieGEMUGLXG1amJQ4oFRo1aKr_KhcTToTo2eJiszeubzdV063bZmVuUSWdkqfmzb8ivoMo3ABZbzdwC10QkF6hZ_U7TZjdlZ6iD83cZ3PLuszqyB_6cgxYJd5i3x2ikEB_W8qZkmo-UHsT1IzCvGb-3QX3suOEuDxWjEG-ObRUwSmt1BKg_iU0yS5esCDqCgg",
+            "eyJraWQiOiJaMTZQVVlhczMyU2gwWlE3dms5TTR2MnBiTU9IazJBeTNGM3hqYVY3QlMwIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJlM2E3ZjA1Ni0yOTFmLTQyNzItYTAxNi0wM2ViNDFhNTliYjAiLCJhdWQiOiJtYXJrZXRmbG93LWFwaSIsIm5iZiI6MTc5MTcwNTc5Miwicm9sZXMiOlsiQ1VTVE9NRVIiXSwiaXNzIjoiaHR0cHM6Ly9tYXJrZXRmbG93LmRldi9pZGVudGl0eSIsIm5hbWUiOiJMaW51cyBUb3J2YWxkcyIsImV4cCI6MTc5MTcwNjY5MiwiaWF0IjoxNzkxNzA1NzkyLCJqdGkiOiJkYmQ3NTEzOS1kZWUyLTRkMDYtYTRiNC0xNDMyNWIyZTZmNDkiLCJlbWFpbCI6ImxpbnVzQGRlbW8ubWFya2V0Zmxvdy5sb2NhbCJ9.ko8rtfCYXIh7qEDPDBH7eaZ8YkJYHO1LAPAzozC2qlhh0vKyclw6cb2mX1k2DJnNufQigwi4u6slantOZfx5fX-go6qGdzYwX5TdL6lnaKnCQlCI420nXdx9giVcGXWeOMbnIOk5sufteeOSx-eUfFiSwBySCS4508YHbW26aSjEqwBONEVCvtkAP_6jH8WWjvIRRAJVroFL5hiuE-4UBwtx66p4ImubW09SRPcL2wOA-ycDDeGdP_o2AC3ZtglqFbjDhz-lBCDFs613Jw0TYckT7buuWhjCeYLuDkc7nynieoILyIK5SoArJ6Cyl2TPh3VjK3Zeu_yZOI0bVG9KYA"
+        ],
+        "variants": [
+            {
+                "sku": "KC-BOOK-WN",
+                "variantId": "f3b5b67f-7c0e-45e1-8bae-f006a67d807d"
+            },
+            {
+                "sku": "AUR-CBL-2M",
+                "variantId": "264a218d-9d92-4767-a6f4-1cc8f4e82435"
+            },
+            {
+                "sku": "AUR-SPK-TEAL",
+                "variantId": "1badd275-ea63-49dc-9929-c8d877905593"
+            },
+            {
+                "sku": "AUR-SPK-CORAL",
+                "variantId": "7ada5b8f-5081-432b-8e76-be5cfa538d8e"
+            }
+        ]
+    }
+}

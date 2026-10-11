@@ -1,0 +1,19 @@
+# build output
+**/target/
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+# local configuration and data
+.env
+.env.*
+!.env.example
+**/data/images/
+*.log
+# IDEs
+.idea/
+.vscode/
+*.iml
+.DS_Store
+dump.rdb
+scripts/node_modules/

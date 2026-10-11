@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/identity.user.events.UserRolesChanged.v1.schema.json",
+  "title": "UserRolesChanged v1",
+  "description": "Roles changed, e.g. VENDOR granted after approval.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "UserRolesChanged"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "roles",
+        "userId"
+      ],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "examples": [
+              "CUSTOMER",
+              "VENDOR",
+              "ADMIN"
+            ],
+            "description": "open enumeration: known values CUSTOMER, VENDOR, ADMIN"
+          },
+          "minItems": 1
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "x-topic": "identity.user.events",
+  "x-producer": "identity-service",
+  "x-consumers": [
+    "notification-service"
+  ],
+  "x-key": "userId"
+}

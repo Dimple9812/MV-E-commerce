@@ -1,0 +1,25 @@
+{
+  "topic": "payment.events",
+  "key": "0df9604a-87ef-443f-ad33-06eb3e8cd298",
+  "value": {
+    "eventId": "489b28e4-a6d3-4b6b-ae5b-6c618f41a049",
+    "payload": {
+      "amount": 128.52,
+      "status": "SUCCEEDED",
+      "orderId": "0df9604a-87ef-443f-ad33-06eb3e8cd298",
+      "currency": "USD",
+      "refundId": "5bbd2121-1f15-4e99-99b9-e8610a25883e",
+      "paymentId": "3f44281e-3e7b-4edb-8674-977bd24d61c1",
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b",
+      "refundedAmount": 128.52
+    },
+    "producer": "payment-service",
+    "eventType": "RefundCompleted",
+    "occurredAt": "2026-10-11T01:53:58.021435456Z",
+    "aggregateId": "0df9604a-87ef-443f-ad33-06eb3e8cd298",
+    "causationId": "5ed9b560-b59d-4827-8f15-e44be2716335",
+    "aggregateType": "Payment",
+    "correlationId": "c179c440-96c2-42bf-a533-2a24d3549d07",
+    "schemaVersion": 1
+  }
+}

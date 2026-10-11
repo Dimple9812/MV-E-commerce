@@ -1,0 +1,27 @@
+{
+  "topic": "inventory.events",
+  "key": "d59b722f-73fd-419a-9f64-cc00262d61d6",
+  "value": {
+    "eventId": "54baffdb-2ee5-4b9a-9396-2b2bdb50458e",
+    "payload": {
+      "reason": "INSUFFICIENT_STOCK",
+      "orderId": "d59b722f-73fd-419a-9f64-cc00262d61d6",
+      "unavailable": [
+        {
+          "sku": "AUR-TT-LTD",
+          "available": 0,
+          "requested": 1,
+          "variantId": "2535d3a6-dae1-43d8-8b80-ed91ff484eeb"
+        }
+      ]
+    },
+    "producer": "inventory-service",
+    "eventType": "InventoryReservationFailed",
+    "occurredAt": "2026-10-11T07:02:54.355081036Z",
+    "aggregateId": "d59b722f-73fd-419a-9f64-cc00262d61d6",
+    "causationId": "dad2ceec-9d63-4b2e-b74a-351a712b9b91",
+    "aggregateType": "Reservation",
+    "correlationId": "92761296-33fb-4f94-b126-5eac43fd51e2",
+    "schemaVersion": 1
+  }
+}

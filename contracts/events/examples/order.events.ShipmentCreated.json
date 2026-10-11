@@ -1,0 +1,22 @@
+{
+  "topic": "order.events",
+  "key": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+  "value": {
+    "eventId": "9ee0aac8-f65d-4261-9207-d1563eab6ad7",
+    "payload": {
+      "carrier": "DHL",
+      "orderId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+      "vendorId": "072a9bac-6c2e-4c71-8fb6-02cf38051e72",
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b",
+      "suborderId": "f98ae208-34c1-417f-b924-37e0fef49d64",
+      "trackingNumber": "JD0123456789"
+    },
+    "producer": "order-service",
+    "eventType": "ShipmentCreated",
+    "occurredAt": "2026-10-11T01:53:58.621307574Z",
+    "aggregateId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+    "aggregateType": "Order",
+    "correlationId": "51aec986-6cd3-4cc4-a050-1f1d48998eea",
+    "schemaVersion": 1
+  }
+}

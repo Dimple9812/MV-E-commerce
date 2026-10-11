@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/inventory.events.StockLevelChanged.v1.schema.json",
+  "title": "StockLevelChanged v1",
+  "description": "Availability changed; stockVersion orders updates per variant.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "StockLevelChanged"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "available",
+        "productId",
+        "reserved",
+        "sku",
+        "sold",
+        "stockVersion",
+        "variantId",
+        "vendorId"
+      ],
+      "properties": {
+        "variantId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "productId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "sku": {
+          "type": "string"
+        },
+        "available": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reserved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stockVersion": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "x-topic": "inventory.events",
+  "x-producer": "inventory-service",
+  "x-consumers": [
+    "catalog-service",
+    "notification-service",
+    "analytics-service"
+  ],
+  "x-key": "orderId (reservation events) or variantId (stock events)"
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/payment.commands.PaymentCaptureRequested.v1.schema.json",
+  "title": "PaymentCaptureRequested v1",
+  "description": "Saga step after reservation: capture the authorisation.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "PaymentCaptureRequested"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency",
+        "orderId"
+      ],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "decimal amount in the order currency, 2 fraction digits"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "x-topic": "payment.commands",
+  "x-producer": "order-service",
+  "x-consumers": [
+    "payment-service"
+  ],
+  "x-key": "orderId"
+}

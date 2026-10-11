@@ -1,0 +1,22 @@
+{
+  "topic": "identity.user.events",
+  "key": "798922ce-c4ea-4fad-a37f-79e46cbbe923",
+  "value": {
+    "eventId": "d62604ef-4d8c-476e-94c7-89f3e21dfcd3",
+    "payload": {
+      "roles": [
+        "CUSTOMER",
+        "VENDOR"
+      ],
+      "reason": "VendorApproved",
+      "userId": "798922ce-c4ea-4fad-a37f-79e46cbbe923"
+    },
+    "producer": "identity-service",
+    "eventType": "UserRolesChanged",
+    "occurredAt": "2026-10-11T01:53:06.639942698Z",
+    "aggregateId": "798922ce-c4ea-4fad-a37f-79e46cbbe923",
+    "aggregateType": "User",
+    "correlationId": "da1ac3af-3bbd-4e65-ab8c-1862150d90db",
+    "schemaVersion": 1
+  }
+}

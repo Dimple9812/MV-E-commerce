@@ -1,0 +1,15 @@
+server:
+  port: ${PORT:8082}
+
+spring:
+  application:
+    name: vendor-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/vendor_db}
+    username: ${DB_USERNAME:vendor_svc}
+    password: ${DB_PASSWORD:}
+
+marketflow:
+  kafka:
+    produces: vendor.events,platform.audit.events
+    consumes: order.events

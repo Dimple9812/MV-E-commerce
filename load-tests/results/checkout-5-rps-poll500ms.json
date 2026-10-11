@@ -1,0 +1,196 @@
+{
+    "metrics": {
+        "http_req_blocked": {
+            "avg": 0.01465153934447137,
+            "min": 0.002227,
+            "med": 0.007509,
+            "max": 12.497764,
+            "p(90)": 0.011263,
+            "p(95)": 0.021716
+        },
+        "http_req_receiving": {
+            "max": 105.271682,
+            "p(90)": 5.362862,
+            "p(95)": 8.709288,
+            "avg": 2.288685614079836,
+            "min": 0.019631,
+            "med": 0.948836
+        },
+        "vus": {
+            "value": 5,
+            "min": 3,
+            "max": 22
+        },
+        "http_req_duration{endpoint:checkout}": {
+            "p(90)": 128.35906350000008,
+            "p(95)": 179.97370705,
+            "avg": 64.77852777759205,
+            "min": 15.161149,
+            "med": 47.119205,
+            "max": 428.128496,
+            "thresholds": {
+                "p(95)<800": false
+            }
+        },
+        "orders_unfinished": {
+            "count": 0,
+            "rate": 0,
+            "thresholds": {
+                "count==0": false
+            }
+        },
+        "iterations": {
+            "count": 598,
+            "rate": 4.831229800793267
+        },
+        "http_req_waiting": {
+            "avg": 46.105135469837904,
+            "min": 5.100519,
+            "med": 35.075686,
+            "max": 427.474521,
+            "p(90)": 93.410592,
+            "p(95)": 117.06051
+        },
+        "data_received": {
+            "count": 14731771,
+            "rate": 119017.67738070573
+        },
+        "iteration_duration": {
+            "p(90)": 4175.2037988,
+            "p(95)": 4309.9993577,
+            "avg": 3670.679405145486,
+            "min": 2438.136553,
+            "med": 3691.7594765,
+            "max": 4811.482957
+        },
+        "http_req_failed{endpoint:checkout}": {
+            "passes": 0,
+            "fails": 598,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "checks": {
+            "fails": 0,
+            "passes": 598,
+            "value": 1
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 48.44062002844034,
+            "min": 5.705252,
+            "med": 37.446205,
+            "max": 428.128496,
+            "p(90)": 97.725005,
+            "p(95)": 121.401343
+        },
+        "http_req_sending": {
+            "min": 0.00622,
+            "med": 0.024459,
+            "max": 7.844141,
+            "p(90)": 0.071444,
+            "p(95)": 0.099474,
+            "avg": 0.04679894452238251
+        },
+        "data_sent": {
+            "count": 7937082,
+            "rate": 64123.52356143783
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 7841,
+            "value": 0
+        },
+        "http_reqs": {
+            "rate": 63.34727904351171,
+            "count": 7841
+        },
+        "http_req_connecting": {
+            "med": 0,
+            "max": 1.355884,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.0009306927687794925,
+            "min": 0
+        },
+        "http_req_tls_handshaking": {
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0,
+            "med": 0
+        },
+        "saga_completion_duration": {
+            "p(90)": 4174.900000000001,
+            "p(95)": 4309.75,
+            "avg": 3670.459866220736,
+            "min": 2438,
+            "med": 3691.5,
+            "max": 4812,
+            "thresholds": {
+                "p(95)<5000": false
+            }
+        },
+        "orders_confirmed": {
+            "count": 598,
+            "rate": 4.831229800793267
+        },
+        "vus_max": {
+            "min": 20,
+            "max": 23,
+            "value": 23
+        },
+        "dropped_iterations": {
+            "count": 3,
+            "rate": 0.02423693879996622
+        },
+        "http_req_duration": {
+            "avg": 48.44062002844034,
+            "min": 5.705252,
+            "med": 37.446205,
+            "max": 428.128496,
+            "p(90)": 97.725005,
+            "p(95)": 121.401343
+        }
+    },
+    "setup_data": {
+        "tokens": [
+            "eyJraWQiOiJaMTZQVVlhczMyU2gwWlE3dms5TTR2MnBiTU9IazJBeTNGM3hqYVY3QlMwIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIxN2IzZWI1ZC02MjIyLTQwZjMtYWYwNy0wYWQ0ZGE2MmJhM2IiLCJhdWQiOiJtYXJrZXRmbG93LWFwaSIsIm5iZiI6MTc5MTcwNTQzNiwicm9sZXMiOlsiQ1VTVE9NRVIiXSwiaXNzIjoiaHR0cHM6Ly9tYXJrZXRmbG93LmRldi9pZGVudGl0eSIsIm5hbWUiOiJBZGEgTG92ZWxhY2UiLCJleHAiOjE3OTE3MDYzMzYsImlhdCI6MTc5MTcwNTQzNiwianRpIjoiOGE4NTlmOTMtMjgwMi00MTdjLTg3NDItMmVhYTE3ZDc5ZTkxIiwiZW1haWwiOiJhZGFAZGVtby5tYXJrZXRmbG93LmxvY2FsIn0.Z7WDN9UDOkt3AuzR_FPnrrrCn4L-YLFV6uwAnZWqAUsqy6mk2k85lupMLLPtO4xzZ1ZonZHSQtZX0Ydzo9EBqY1i0F8HduFdOyqxbbLLuSee5IBMd7xdpavbHQKpMO64pjXxC-MC61hzJl4F0HfmjuBgS6CZgRIpoVDwOCd28JzrPqSWG2Xq90A0dfvLkUjtkpK-7ajfbt29Rm7_BDjb8rWppFn570caw6DQxPXvcbdtfRRPo0rcA4Vohv3plgVqWpObiBoZa1kfG-fRHu_4OhMY_roeBfLNsGgt6pCPtvNYoihtWfPrEtkjyfJBDgWw0fA1OgL4Y5ttCHRNesmUtA",
+            "eyJraWQiOiJaMTZQVVlhczMyU2gwWlE3dms5TTR2MnBiTU9IazJBeTNGM3hqYVY3QlMwIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJlM2E3ZjA1Ni0yOTFmLTQyNzItYTAxNi0wM2ViNDFhNTliYjAiLCJhdWQiOiJtYXJrZXRmbG93LWFwaSIsIm5iZiI6MTc5MTcwNTQzNywicm9sZXMiOlsiQ1VTVE9NRVIiXSwiaXNzIjoiaHR0cHM6Ly9tYXJrZXRmbG93LmRldi9pZGVudGl0eSIsIm5hbWUiOiJMaW51cyBUb3J2YWxkcyIsImV4cCI6MTc5MTcwNjMzNywiaWF0IjoxNzkxNzA1NDM3LCJqdGkiOiI5ZDNlMjc5OS1lN2JhLTRhYjAtODIzZC1mMDE5NDMxMDlhNDEiLCJlbWFpbCI6ImxpbnVzQGRlbW8ubWFya2V0Zmxvdy5sb2NhbCJ9.VKCnNAdmw30096YbbQkJhQmBGIQNLGzKb7MczOUIjee-0IxZ8h9OWB6ZM_wBxYLz0ADSza79AyHQHY9BEUXE8zNMeO0W2gma5hw1BRM9fGmCP_y4WXNRVtU180BQOST8HFcNqSB8FiYeVTga9JWw1dkub0AwMZgwizbsziEeCLW68flIcof4GxXZRbFTeyGr4XEwQYYNgQjVJiqU8hSftrZ0zzsrbjBIr0RRMkLJKyRL_-w4Mw_NBXkJiSCVXhIK1xQUDh9Q7C1rh5Q8ldEy4C_K08hf3fhdfadmS8rqo-t_h-UojZLr7sZAoNahTrYeRktzXKSV1LTQvL-5sSpwIg"
+        ],
+        "variants": [
+            {
+                "sku": "KC-BOOK-WN",
+                "variantId": "f3b5b67f-7c0e-45e1-8bae-f006a67d807d"
+            },
+            {
+                "sku": "AUR-CBL-2M",
+                "variantId": "264a218d-9d92-4767-a6f4-1cc8f4e82435"
+            },
+            {
+                "sku": "AUR-SPK-TEAL",
+                "variantId": "1badd275-ea63-49dc-9929-c8d877905593"
+            },
+            {
+                "sku": "AUR-SPK-CORAL",
+                "variantId": "7ada5b8f-5081-432b-8e76-be5cfa538d8e"
+            }
+        ]
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "checkout accepted": {
+                    "id": "a9b063834fdf21203e5dddf9a5136497",
+                    "passes": 598,
+                    "fails": 0,
+                    "name": "checkout accepted",
+                    "path": "::checkout accepted"
+                }
+            }
+    }
+}

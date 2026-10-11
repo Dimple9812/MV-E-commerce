@@ -1,0 +1,37 @@
+{
+  "topic": "inventory.events",
+  "key": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+  "value": {
+    "eventId": "e6d3029e-58db-4917-9eb4-a3da461b094d",
+    "payload": {
+      "lines": [
+        {
+          "sku": "KC-SKL-28",
+          "quantity": 1,
+          "variantId": "92d43d85-7328-45ed-b1c8-2f8401376a38"
+        },
+        {
+          "sku": "AUR-HP-BLK",
+          "quantity": 1,
+          "variantId": "ad7a399c-ca81-4b59-9e90-bb5286163a96"
+        },
+        {
+          "sku": "NW-RTR-43",
+          "quantity": 2,
+          "variantId": "b555bfdd-bee3-4337-9af1-e95c0884b162"
+        }
+      ],
+      "orderId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+      "expiresAt": "2026-10-11T02:08:31.324727981Z",
+      "reservationId": "7087c49b-dafe-4ce1-ba41-02347eb18130"
+    },
+    "producer": "inventory-service",
+    "eventType": "InventoryReserved",
+    "occurredAt": "2026-10-11T01:53:31.348171782Z",
+    "aggregateId": "0845392b-e17b-4dbd-967a-dc03b7d201d7",
+    "causationId": "deb5b29e-de30-4bff-a9ff-1669d0233a57",
+    "aggregateType": "Reservation",
+    "correlationId": "f7f67a15-f502-4caa-a87f-2dd2bd20068d",
+    "schemaVersion": 1
+  }
+}

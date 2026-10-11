@@ -1,0 +1,24 @@
+{
+  "topic": "payment.events",
+  "key": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+  "value": {
+    "eventId": "27e9bb62-7be2-4b1c-833c-c9fd539ef181",
+    "payload": {
+      "code": "capture_declined",
+      "amount": 160.92,
+      "status": "CAPTURE_FAILED",
+      "orderId": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+      "currency": "USD",
+      "paymentId": "c1b2650b-02a2-424b-af95-794bfdfc8c37",
+      "customerId": "17b3eb5d-6222-40f3-af07-0ad4da62ba3b"
+    },
+    "producer": "payment-service",
+    "eventType": "PaymentCaptureFailed",
+    "occurredAt": "2026-10-11T01:53:37.052582111Z",
+    "aggregateId": "ebd1193c-4811-49b1-a7e2-1ae9f5b63197",
+    "causationId": "f33f3ad2-2da9-464f-891d-08b1d09ec0c2",
+    "aggregateType": "Payment",
+    "correlationId": "fa71a8ab-42ff-4e83-8a99-47dd76b08978",
+    "schemaVersion": 1
+  }
+}
