@@ -8,6 +8,10 @@ their own part of the order. The interesting part is underneath: checkout is a p
 across order, inventory and payment services, every event goes through a transactional outbox, every consumer
 is idempotent, stock cannot be oversold, and an unknown payment outcome is reconciled instead of guessed.
 
+**Live demo: https://marketflow-demo.vercel.app** (the React storefront, seller hub and admin console with an
+in-browser stand-in for the backend and sample data; use the banner to try it as a customer, seller or admin).
+The demo does not run the Java services: see [Demo mode](#demo-mode) for what it is and is not.
+
 > **Status.** Everything listed under Features is implemented and was exercised on 2026-10-11 against real
 > PostgreSQL, Kafka and Redis: 136 backend tests (62 unit, 74 integration), 43 frontend unit tests, 7 Playwright
 > browser tests and 12 API end-to-end checks passed, including on a clean install, plus k6 load tests with
@@ -287,6 +291,19 @@ Saga state and every transition are stored in order_db, so a restart continues w
 | Testing | JUnit 5, AssertJ, Spring Boot Test, Testcontainers (PostgreSQL, Redis), embedded Kafka, Vitest + Testing Library, Playwright, k6 |
 | Observability | Micrometer + Prometheus, Grafana dashboards, OpenTelemetry tracing (OTLP) to Jaeger, structured JSON logs (Logstash format) with correlation ids |
 | Delivery | Docker (multi-stage, layered jars, non-root), Docker Compose, Helm chart for Kubernetes, GitHub Actions |
+
+## Demo mode
+
+`VITE_DEMO_MODE=true npm run build` (in `frontend/`) builds the public demo deployed on Vercel
+(`frontend/vercel.json`). It bundles `src/demo/`, a `fetch` interceptor that answers every `/api/*` call inside
+the browser from sample data saved in the visitor's localStorage. It follows the real services' rules where the UI
+depends on them: server-side pricing with coupons, shipping and tax; one suborder per seller; the checkout saga with
+every sandbox card outcome (approved, asynchronous, timeout and reconciliation, declined, capture failure) and its
+compensations; stock reservations; cancellation with refund and restock; verified-purchase reviews; seller
+earnings; admin moderation, analytics and audit log. There is no Kafka, database or second user behind it, so it
+demonstrates the product and the frontend, not the distributed backend. The regular build contains none of this
+code (dynamic import). Playwright covers it: `E2E_DEMO=1 E2E_BASE_URL=http://localhost:4173 npx playwright test`
+against `vite preview` of a demo build.
 
 ## Run it locally
 
