@@ -32,6 +32,14 @@ x-java-limits: &java-limits
   deploy:
     resources:
       limits: { memory: 640m }
+  # The health check command comes from each image's Dockerfile; only the timing is overridden here. Ten JVMs
+  # starting together under Docker Desktop can each take several minutes (observed: 232 s), so allow up to
+  # 6 minutes before a failing check counts.
+  healthcheck:
+    start_period: 360s
+    interval: 15s
+    timeout: 5s
+    retries: 10
 
 services:
   # ---------------------------------------------------------------- infrastructure
