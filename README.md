@@ -332,6 +332,13 @@ docker compose stop jaeger prometheus grafana        # optional: frees a little 
 
 If 3000 is taken on your machine, set `FRONTEND_HOST_PORT` in `.env` and open that port instead.
 
+**A temporary public link** (free; works while your machine and the stack are running): install
+[cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) and run
+`cloudflared tunnel --url http://localhost:3000` (or your `FRONTEND_HOST_PORT`). It prints an
+`https://<random>.trycloudflare.com` address that anyone can open. The storefront's nginx accepts API calls from
+whatever host the page was opened on and still rejects cross-site requests, so no gateway change is needed.
+Anyone with the link reaches your local stack: share it only for demos and stop the tunnel afterwards.
+
 **Without Docker** (how the project was verified): run PostgreSQL 16, Kafka 3.9 and Redis 7 locally, create the
 databases with `infrastructure/postgres/init/01-create-service-databases.sh`, `mvn -DskipTests package`, start
 each `services/*/target/*.jar` with the environment variables from `docker-compose.yml`, and run the frontend
