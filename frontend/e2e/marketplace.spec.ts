@@ -58,6 +58,9 @@ test('customers cannot open the admin area', async ({ page }) => {
 });
 
 test.describe.serial('order lifecycle across customer and seller', () => {
+  // The demo build keeps its data per browser context, so state cannot carry over between tests; demo.spec.ts
+  // covers the same journey within one context.
+  test.skip(!!process.env.E2E_DEMO, 'needs a shared backend');
   let orderId = '';
 
   test('a customer places an order that the saga confirms', async ({ page }) => {

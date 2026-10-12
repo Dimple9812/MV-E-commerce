@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, type ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -20,18 +20,31 @@ const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AuthProvider>
-          <CartProvider>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
-          </CartProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </StrictMode>,
-);
+async function start() {
+  // The public demo build (VITE_DEMO_MODE=true) answers /api calls in the browser; the import is dynamic so the
+  // regular build contains none of it.
+  let Banner: ComponentType | null = null;
+  if (import.meta.env.VITE_DEMO_MODE === 'true') {
+    const demo = await import('./demo');
+    demo.installDemoBackend();
+    Banner = demo.DemoBanner;
+  }
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AuthProvider>
+            <CartProvider>
+              <ToastProvider>
+                {Banner && <Banner />}
+                <App />
+              </ToastProvider>
+            </CartProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </StrictMode>,
+  );
+}
+
+void start();

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { AlertTriangle, Loader2, Star } from 'lucide-react';
-import { forwardRef, useEffect, useRef, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { forwardRef, useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import { ApiError } from '@/lib/api';
 import { humanize, money } from '@/lib/format';
 
@@ -162,8 +162,10 @@ export function PageHeader({ title, description, actions }: { title: string; des
 
 /** Deterministic placeholder artwork for products without images: a tag shape on an ink tile. */
 export function ProductArt({ name, url, className }: { name: string; url?: string | null; className?: string }) {
-  if (url) {
-    return <img src={url} alt={name} loading="lazy" className={clsx('h-full w-full object-cover', className)} />;
+  // an image that fails to load (moved, blocked, offline) falls back to the generated tile below
+  const [failed, setFailed] = useState<string | null>(null);
+  if (url && failed !== url) {
+    return <img src={url} alt={name} loading="lazy" onError={() => setFailed(url)} className={clsx('h-full w-full object-cover', className)} />;
   }
   const hue = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
   return (
