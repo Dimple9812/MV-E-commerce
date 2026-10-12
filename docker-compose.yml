@@ -72,9 +72,11 @@ services:
     # ports: ["127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='analytics_db'\" | grep -q 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      # Generous timeouts: on a busy Docker Desktop host the check itself can take seconds, and a timed-out
+      # check marks a perfectly working database unhealthy.
+      interval: 10s
+      timeout: 30s
+      retries: 30
 
   kafka:
     image: apache/kafka:3.9.1
@@ -102,10 +104,11 @@ services:
     ports: ["127.0.0.1:${KAFKA_HOST_PORT:-9094}:9094"]   # for scripts/dlt-replay.mjs on the host
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
-      interval: 10s
-      timeout: 10s
-      retries: 15
-      start_period: 20s
+      # The check starts a JVM, so it is slow on a loaded host; check less often and allow it longer.
+      interval: 30s
+      timeout: 60s
+      retries: 20
+      start_period: 120s
 
   redis:
     image: redis:7.4-alpine
@@ -114,9 +117,9 @@ services:
     # No host port: only the services use Redis, and 6379 is often taken by a locally installed Redis.
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+      interval: 10s
+      timeout: 15s
+      retries: 30
 
   mailpit:
     image: axllent/mailpit:v1.21
