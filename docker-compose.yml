@@ -44,6 +44,7 @@ x-java-limits: &java-limits
 services:
   # ---------------------------------------------------------------- infrastructure
   postgres:
+    init: true   # tini as PID 1 reaps leftover health-check processes so the container can always be stopped
     image: postgres:16-alpine
     <<: *restart
     environment:
@@ -79,6 +80,7 @@ services:
       retries: 30
 
   kafka:
+    init: true   # tini as PID 1 reaps leftover health-check processes so the container can always be stopped
     image: apache/kafka:3.9.1
     <<: *restart
     environment:
@@ -111,6 +113,7 @@ services:
       start_period: 120s
 
   redis:
+    init: true   # tini as PID 1 reaps leftover health-check processes so the container can always be stopped
     image: redis:7.4-alpine
     <<: *restart
     command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
