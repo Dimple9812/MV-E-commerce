@@ -22,7 +22,8 @@ x-java-env: &java-env
   TRACING_SAMPLING: ${TRACING_SAMPLING:-1.0}
   OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
   LOG_FORMAT: ${LOG_FORMAT:-logstash}
-  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError
+  # MF_JAVA_OPTS in .env overrides this, e.g. the low-resource settings in the README.
+  JAVA_TOOL_OPTIONS: ${MF_JAVA_OPTS:--XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError}
 
 x-java-deps: &java-deps
   postgres: { condition: service_healthy }
@@ -312,6 +313,7 @@ services:
       TRACING_ENABLED: ${TRACING_ENABLED:-true}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
       LOG_FORMAT: ${LOG_FORMAT:-logstash}
+      JAVA_TOOL_OPTIONS: ${MF_JAVA_OPTS:--XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError}
     ports: ["127.0.0.1:8080:8080"]
     depends_on:
       redis: { condition: service_healthy }

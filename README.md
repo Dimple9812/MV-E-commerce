@@ -313,6 +313,25 @@ node scripts/seed-demo.mjs    # demo sellers, products, stock and customers (rea
 Stop with `docker compose down` (data kept) or `docker compose down -v` (deletes databases, Kafka history and
 Grafana state; use it to start from scratch or after changing database passwords).
 
+**Low-resource machines** (Docker with 2 CPUs / 4 GB, e.g. WSL 2 defaults on a laptop): give Docker more if you
+can (Docker Desktop → Settings → Resources, or `%UserProfile%\.wslconfig` with WSL 2). Otherwise add these to `.env`
+and start without the monitoring tools; the JVMs then skip the optimising compiler, which makes start-up much
+lighter at the cost of peak throughput (do not use these settings for load tests):
+
+```bash
+MF_JAVA_OPTS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -XX:MaxRAMPercentage=60 -Xss512k -XX:+ExitOnOutOfMemoryError
+TRACING_ENABLED=false
+```
+
+```bash
+docker compose down
+docker compose up -d postgres kafka redis mailpit   # infrastructure first
+docker compose up -d                                 # then everything else
+docker compose stop jaeger prometheus grafana        # optional: frees a little more memory
+```
+
+If 3000 is taken on your machine, set `FRONTEND_HOST_PORT` in `.env` and open that port instead.
+
 **Without Docker** (how the project was verified): run PostgreSQL 16, Kafka 3.9 and Redis 7 locally, create the
 databases with `infrastructure/postgres/init/01-create-service-databases.sh`, `mvn -DskipTests package`, start
 each `services/*/target/*.jar` with the environment variables from `docker-compose.yml`, and run the frontend
