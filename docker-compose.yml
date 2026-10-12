@@ -309,7 +309,7 @@ services:
       NOTIFICATION_URI: http://notification-service:8087
       REVIEW_URI: http://review-service:8088
       ANALYTICS_URI: http://analytics-service:8089
-      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
+      CORS_ALLOWED_ORIGINS: http://localhost:${FRONTEND_HOST_PORT:-3000},http://127.0.0.1:${FRONTEND_HOST_PORT:-3000},http://localhost:5173
       TRACING_ENABLED: ${TRACING_ENABLED:-true}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
       LOG_FORMAT: ${LOG_FORMAT:-logstash}
