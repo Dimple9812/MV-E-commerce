@@ -322,7 +322,7 @@ services:
     <<: *restart
     environment:
       GATEWAY_UPSTREAM: http://gateway-service:8080
-    ports: ["127.0.0.1:3000:8080"]
+    ports: ["127.0.0.1:${FRONTEND_HOST_PORT:-3000}:8080"]   # set FRONTEND_HOST_PORT in .env if 3000 is taken
     depends_on:
       # Started, not healthy: nginx only needs the gateway's name to resolve, and the page shows an error until the
       # gateway answers, instead of the whole start-up failing on a slow machine.
