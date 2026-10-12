@@ -28,8 +28,18 @@ export class Session {
     let res;
     // 429 comes from the gateway's rate limiter before the request reaches a service, so retrying is safe even
     // for POSTs. Honour Retry-After, otherwise back off 0.5 s, 1 s, 2 s ...
-    for (let attempt = 0; ; attempt++) {
+    // 503 (service still starting, or its circuit breaker open) is retried only for reads and the auth endpoints,
+    // which are safe to repeat (register answers 409 the second time, which the caller handles); up to ~3 minutes,
+    // because on a slow machine a service can be up but not yet answering in time.
+    const retry503 = method === 'GET' || path.startsWith('/api/v1/auth/');
+    for (let attempt = 0, unavailable = 0; ; attempt++) {
       res = await fetch(BASE + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
+      if (res.status === 503 && retry503 && unavailable < 20) {
+        if (unavailable++ === 0) log(`${method} ${path}: service unavailable, retrying for up to 3 minutes ...`);
+        await res.text();
+        await sleep(Math.min(10000, 1000 * 2 ** Math.min(unavailable, 4)));
+        continue;
+      }
       if (res.status !== 429 || attempt >= 6) break;
       const after = Number(res.headers.get('retry-after'));
       await sleep(after > 0 ? after * 1000 : 500 * 2 ** attempt);

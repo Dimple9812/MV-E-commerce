@@ -136,5 +136,6 @@ main().catch((e) => {
   const cause = e.cause ? ` (${e.cause.code ?? e.cause.message ?? e.cause})` : '';
   console.error('Seeding failed:', e.message + cause);
   if (e.cause) console.error('Is the gateway up? Check: docker compose ps gateway-service  (it must say healthy)');
-  process.exit(1);
+  // exitCode instead of process.exit(): exiting while fetch sockets close trips a libuv assertion in Node 23 on Windows.
+  process.exitCode = 1;
 });
