@@ -132,6 +132,9 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error('Seeding failed:', e.message);
+  // fetch() reports "fetch failed" and hides the real reason (e.g. ECONNREFUSED) in e.cause.
+  const cause = e.cause ? ` (${e.cause.code ?? e.cause.message ?? e.cause})` : '';
+  console.error('Seeding failed:', e.message + cause);
+  if (e.cause) console.error('Is the gateway up? Check: docker compose ps gateway-service  (it must say healthy)');
   process.exit(1);
 });

@@ -1,7 +1,7 @@
 // Minimal API client for MarketFlow scripts (Node 20+, no dependencies).
 // All calls go through the gateway exactly like the browser does.
 
-export const BASE = process.env.MF_API ?? 'http://localhost:8080';
+export const BASE = process.env.MF_API ?? 'http://127.0.0.1:8080'   // 127.0.0.1, not localhost: on Windows localhost may resolve to ::1, which Compose does not bind;
 
 export class ApiError extends Error {
   constructor(status, body, method, path) {
