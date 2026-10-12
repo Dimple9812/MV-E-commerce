@@ -30,6 +30,9 @@ x-java-deps: &java-deps
   kafka: { condition: service_healthy }
 
 x-java-limits: &java-limits
+  # tini as PID 1: the JVM does not reap child processes, so health-check commands that time out on a slow host
+  # pile up as zombies and Docker Desktop then cannot stop the container.
+  init: true
   deploy:
     resources:
       limits: { memory: 640m }
