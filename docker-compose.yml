@@ -50,9 +50,15 @@ services:
       NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?}
       REVIEW_DB_PASSWORD: ${REVIEW_DB_PASSWORD:?}
       ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?}
+    # The init script is copied with Windows line endings stripped: on a Windows checkout with
+    # core.autocrlf=true it would otherwise fail inside the Linux container and postgres would never get healthy.
+    entrypoint:
+      - bash
+      - -c
+      - 'tr -d "\r" < /init-src/01-create-service-databases.sh > /docker-entrypoint-initdb.d/01-create-service-databases.sh && chmod 755 /docker-entrypoint-initdb.d/01-create-service-databases.sh && exec docker-entrypoint.sh postgres'
     volumes:
       - pg-data:/var/lib/postgresql/data
-      - ./infrastructure/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/postgres/init:/init-src:ro
     # No host port: services reach it on the Compose network, and a PostgreSQL installed on the host would
     # clash with 5432. Set POSTGRES_HOST_PORT in .env and uncomment to connect a desktop SQL client.
     # ports: ["127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"]
