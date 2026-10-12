@@ -33,12 +33,13 @@ x-java-limits: &java-limits
     resources:
       limits: { memory: 640m }
   # The health check command comes from each image's Dockerfile; only the timing is overridden here. Ten JVMs
-  # starting together under Docker Desktop can each take several minutes (observed: 232 s), so allow up to
-  # 6 minutes before a failing check counts.
+  # starting together under Docker Desktop can each take many minutes (observed: up to 10). Failures during
+  # start_period do not count, and a service turns healthy as soon as one check passes, so a long window costs nothing
+  # on a fast machine.
   healthcheck:
-    start_period: 360s
+    start_period: 900s
     interval: 15s
-    timeout: 5s
+    timeout: 15s
     retries: 10
 
 services:
@@ -323,7 +324,9 @@ services:
       GATEWAY_UPSTREAM: http://gateway-service:8080
     ports: ["127.0.0.1:3000:8080"]
     depends_on:
-      gateway-service: { condition: service_healthy }
+      # Started, not healthy: nginx only needs the gateway's name to resolve, and the page shows an error until the
+      # gateway answers, instead of the whole start-up failing on a slow machine.
+      gateway-service: { condition: service_started }
 
 volumes:
   pg-data:
