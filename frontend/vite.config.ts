@@ -10,11 +10,17 @@ export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
     port: 5173,
-    proxy: { '/api': { target: process.env.VITE_GATEWAY ?? 'http://localhost:8080', changeOrigin: false } },
+    proxy: {
+      '/api': { target: process.env.VITE_GATEWAY ?? 'http://localhost:8080', changeOrigin: false },
+      '/ws': { target: process.env.VITE_GATEWAY ?? 'http://localhost:8080', changeOrigin: false, ws: true },
+    },
   },
   preview: {
     port: 4173,
-    proxy: { '/api': { target: process.env.VITE_GATEWAY ?? 'http://localhost:8080', changeOrigin: false } },
+    proxy: {
+      '/api': { target: process.env.VITE_GATEWAY ?? 'http://localhost:8080', changeOrigin: false },
+      '/ws': { target: process.env.VITE_GATEWAY ?? 'http://localhost:8080', changeOrigin: false, ws: true },
+    },
   },
   build: {
     sourcemap: true,

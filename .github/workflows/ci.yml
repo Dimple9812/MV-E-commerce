@@ -32,6 +32,7 @@ jobs:
       - name: Unit tests
         run: mvn -B -ntp test
       # Integration tests (*IT) use Testcontainers: PostgreSQL 16 and Redis 7 containers, embedded Kafka (KRaft).
+      # chat-service's ChatWebSocketIT starts a second chat-service instance to prove cross-instance delivery.
       - name: Integration tests
         run: mvn -B -ntp verify -Dsurefire.skip=true
       - name: Test reports
@@ -174,7 +175,8 @@ jobs:
       fail-fast: false
       matrix:
         image: [gateway-service, identity-service, vendor-service, catalog-service, inventory-service,
-                order-service, payment-service, notification-service, review-service, analytics-service, frontend]
+                order-service, payment-service, notification-service, review-service, analytics-service, chat-service,
+                frontend]
     env:
       # Images are pushed only from main, after every check above passed, and only when the repository opts in
       # (Settings > Variables: PUBLISH_IMAGES=true). Otherwise they are built to prove the Dockerfiles work.
