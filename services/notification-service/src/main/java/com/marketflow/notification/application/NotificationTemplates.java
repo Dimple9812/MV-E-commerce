@@ -19,6 +19,9 @@ final class NotificationTemplates {
 
     enum Audience { CUSTOMER, VENDOR }
 
+    /** One chat notification per conversation and recipient per window. */
+    static final long CHAT_NOTIFICATION_WINDOW_SECONDS = 15 * 60;
+
     record Draft(Audience audience, UUID userId, UUID vendorId, String channel, String template, String subject,
                  String body, String link, String dedupeKey) {
     }
@@ -86,6 +89,28 @@ final class NotificationTemplates {
                 out.add(new Draft(Audience.CUSTOMER, uuid(p, "customerId"), null, "IN_APP", "order_delivered",
                         "Order delivered", "Order " + shortId(order) + " was delivered. Enjoy - and leave a review!",
                         "/account/orders/" + order, "in_app:" + e.eventId()));
+            }
+            case "ChatMessageSent" -> {
+                // In-app only, and at most one per conversation and recipient per 15 minutes: a lively chat must
+                // not flood the bell. The text is never in the event, so the notification only says who wrote.
+                UUID conversation = uuid(p, "conversationId");
+                String sender = p.path("senderName").asText("Someone");
+                String what = switch (p.path("messageType").asText("TEXT")) {
+                    case "IMAGE" -> "sent you a photo";
+                    case "PRODUCT_CARD" -> "shared a product with you";
+                    case "ORDER_CARD" -> "sent you an order";
+                    default -> "sent you a message";
+                };
+                boolean toShop = "VENDOR".equals(p.path("recipientSide").asText());
+                String link = (toShop ? "/vendor/messages/" : "/account/messages/") + conversation;
+                long bucket = java.time.Instant.parse(p.path("sentAt").asText(e.occurredAt().toString()))
+                        .getEpochSecond() / CHAT_NOTIFICATION_WINDOW_SECONDS;
+                for (JsonNode r : p.path("recipientUserIds")) {
+                    UUID recipient = UUID.fromString(r.asText());
+                    out.add(new Draft(Audience.CUSTOMER, recipient, null, "IN_APP", "chat_message",
+                            "New message from " + sender, sender + " " + what + ".", link,
+                            "in_app:chat_message:" + conversation + ":" + recipient + ":" + bucket));
+                }
             }
             case "LowStockDetected" -> {
                 UUID vendor = uuid(p, "vendorId");

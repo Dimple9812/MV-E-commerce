@@ -146,4 +146,31 @@ class NotificationIT {
         mvc.perform(get("/api/v1/notifications/unread-count").with(TestJwt.customer(customer)))
                 .andExpect(jsonPath("$.unread").value(0));
     }
+
+    @Test
+    void chatMessagesNotifyInAppAtMostOncePerConversationWindow() {
+        UUID seller = UUID.randomUUID();
+        UUID conversation = UUID.randomUUID();
+        java.util.function.BiFunction<Long, String, String> sent = (messageId, at) -> KafkaTestClient.envelope(
+                UUID.randomUUID(), "ChatMessageSent", "Conversation", conversation.toString(), Map.of(
+                        "conversationId", conversation.toString(), "messageId", messageId,
+                        "vendorId", UUID.randomUUID().toString(), "buyerId", UUID.randomUUID().toString(),
+                        "senderRole", "BUYER", "senderName", "Ada M.", "recipientUserIds", List.of(seller.toString()),
+                        "recipientSide", "VENDOR", "messageType", "TEXT", "sentAt", at));
+        try (KafkaTestClient kafka = new KafkaTestClient(brokers)) {
+            kafka.send("chat.events", conversation.toString(), sent.apply(1L, "2026-10-19T10:00:05Z"));
+            kafka.send("chat.events", conversation.toString(), sent.apply(2L, "2026-10-19T10:03:00Z"));
+            kafka.send("chat.events", conversation.toString(), sent.apply(3L, "2026-10-19T10:20:00Z"));
+        }
+        await().atMost(Duration.ofSeconds(20)).until(() -> jdbc.queryForObject(
+                "select count(*) from notification where recipient_user_id = ? and template = 'chat_message'",
+                Integer.class, seller) == 2);
+        List<Map<String, Object>> rows = jdbc.queryForList("select channel, subject, link from notification"
+                + " where recipient_user_id = ? and template = 'chat_message'", seller);
+        assertThat(rows).allSatisfy(r -> {
+            assertThat(r.get("channel")).isEqualTo("IN_APP");
+            assertThat(r.get("subject")).isEqualTo("New message from Ada M.");
+            assertThat(r.get("link")).isEqualTo("/vendor/messages/" + conversation);
+        });
+    }
 }

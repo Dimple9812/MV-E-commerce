@@ -27,7 +27,7 @@ marketflow:
     # retry/DLT topics for these are created by @RetryableTopic
     consumes: ""
     # notification-service consumes through Spring retry topics, which create their own -notification-dlt topics
-    consumes-with-retry-topics: identity.user.events,vendor.events,order.events,inventory.events
+    consumes-with-retry-topics: identity.user.events,vendor.events,order.events,inventory.events,chat.events
   mail:
     mode: ${MAIL_MODE:log}
     from: ${MAIL_FROM:MarketFlow <no-reply@marketflow.local>}

@@ -30,7 +30,7 @@ public class NotificationListener {
     private static final Logger log = LoggerFactory.getLogger(NotificationListener.class);
     static final Set<String> TYPES = Set.of("UserRegistered", "VendorApplicationSubmitted", "VendorApproved",
             "VendorRejected", "VendorSuspended", "VendorReinstated", "VendorProfileUpdated", "OrderConfirmed",
-            "OrderCancelled", "ShipmentCreated", "OrderDelivered", "LowStockDetected");
+            "OrderCancelled", "ShipmentCreated", "OrderDelivered", "LowStockDetected", "ChatMessageSent");
 
     private final EventListenerSupport support;
     private final NotificationService notifications;
@@ -41,7 +41,8 @@ public class NotificationListener {
         this.notifications = notifications;
         this.meters = meters;
         // created at 0 so the first dead letter shows up in increase()/rate() (see KafkaErrorHandling)
-        for (String source : new String[] {"identity.user.events", "vendor.events", "order.events", "inventory.events"}) {
+        for (String source : new String[] {"identity.user.events", "vendor.events", "order.events", "inventory.events",
+                "chat.events"}) {
             meters.counter("notifications.dlt", "topic", source + "-notification-dlt");
         }
     }
@@ -58,7 +59,8 @@ public class NotificationListener {
             replicationFactor = "${marketflow.kafka.replication-factor:1}",
             exclude = {EmailSender.PermanentDeliveryException.class, EventDeserializationException.class,
                     NonRetryableEventException.class})
-    @KafkaListener(topics = {"identity.user.events", "vendor.events", "order.events", "inventory.events"},
+    @KafkaListener(topics = {"identity.user.events", "vendor.events", "order.events", "inventory.events",
+            "chat.events"},
             groupId = "notification-service")
     public void onEvent(String message) {
         support.handle(message, e -> {
