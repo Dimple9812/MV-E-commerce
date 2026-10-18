@@ -1,11 +1,12 @@
 import clsx from 'clsx';
-import { Bell, LogOut, Menu, Search, ShoppingBag, Store, User as UserIcon, X } from 'lucide-react';
+import { Bell, LogOut, Menu, MessageCircle, Search, ShoppingBag, Store, User as UserIcon, X } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/auth/AuthProvider';
 import { useCart } from '@/cart/CartProvider';
 import { http } from '@/lib/api';
+import { useUnreadChats } from '@/features/chat/hooks';
 
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -49,6 +50,12 @@ function UnreadBadge() {
   return <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-brick px-1 text-center text-[10px] font-bold leading-4 text-white">{data.unread}</span>;
 }
 
+function ChatBadge() {
+  const unread = useUnreadChats().data?.asBuyer ?? 0;
+  if (!unread) return null;
+  return <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-brick px-1 text-center text-[10px] font-bold leading-4 text-white">{unread > 99 ? '99+' : unread}</span>;
+}
+
 export function StoreLayout() {
   const { user, hasRole, logout } = useAuth();
   const { count } = useCart();
@@ -68,6 +75,11 @@ export function StoreLayout() {
             </NavLink>
             {hasRole('ADMIN') && (
               <NavLink to="/admin" className="btn hidden px-3 text-slate hover:text-ink sm:inline-flex">Admin</NavLink>
+            )}
+            {user && (
+              <Link to="/account/messages" className="btn relative px-3" aria-label="Messages">
+                <MessageCircle className="h-5 w-5" aria-hidden /><ChatBadge />
+              </Link>
             )}
             {user && (
               <Link to="/account/notifications" className="btn relative px-3" aria-label="Notifications">
@@ -102,6 +114,7 @@ export function StoreLayout() {
               {user ? (
                 <>
                   <Link className="btn justify-start" to="/account">Account</Link>
+                  <Link className="btn justify-start" to="/account/messages">Messages</Link>
                   <button className="btn justify-start" onClick={() => void logout()}>Sign out</button>
                 </>
               ) : <Link className="btn justify-start" to="/login">Sign in</Link>}
@@ -129,6 +142,8 @@ export interface NavItem {
   label: string;
   icon: ReactNode;
   end?: boolean;
+  /** e.g. an unread count */
+  badge?: ReactNode;
 }
 
 export function DashboardLayout({ title, items }: { title: string; items: NavItem[] }) {
@@ -146,7 +161,7 @@ export function DashboardLayout({ title, items }: { title: string; items: NavIte
             <NavLink key={i.to} to={i.to} end={i.end}
               className={({ isActive }) => clsx('flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium',
                 isActive ? 'bg-ink text-mist' : 'text-ink/80 hover:bg-mist')}>
-              {i.icon}{i.label}
+              {i.icon}{i.label}{i.badge}
             </NavLink>
           ))}
         </nav>

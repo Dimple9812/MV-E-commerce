@@ -5,6 +5,9 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/auth/AuthProvider';
 import { CartProvider } from '@/cart/CartProvider';
 import { ToastProvider } from '@/components/Toast';
+import { ChatProvider } from '@/features/chat/ChatProvider';
+import type { ChatTransport, ConnectionState, TransportHandlers } from '@/features/chat/transport';
+import type { ChatEvent } from '@/lib/types';
 import type { Role } from '@/lib/types';
 
 type Handler = (init: RequestInit | undefined, url: string) => Response | Promise<Response>;
@@ -44,14 +47,47 @@ export function renderApp(ui: ReactElement, { path = '/', route = '/' }: { path?
         <AuthProvider>
           <CartProvider>
             <ToastProvider>
-              <Routes>
-                <Route path={path} element={ui} />
-                <Route path="*" element={<LocationProbe />} />
-              </Routes>
+              <ChatProvider>
+                <Routes>
+                  <Route path={path} element={ui} />
+                  <Route path="*" element={<LocationProbe />} />
+                </Routes>
+              </ChatProvider>
             </ToastProvider>
           </CartProvider>
         </AuthProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   );
+}
+
+/** Chat transport for tests: records published frames and lets a test push server events and state changes. */
+export class FakeChatTransport implements ChatTransport {
+  handlers: TransportHandlers | null = null;
+  published: { destination: string; body: Record<string, unknown> }[] = [];
+  connected = true;
+
+  start(h: TransportHandlers) {
+    this.handlers = h;
+    h.onState(this.connected ? 'connected' : 'connecting');
+    if (this.connected) h.onConnected(false);
+  }
+
+  stop() { this.handlers = null; }
+
+  restart() { /* nothing to do */ }
+
+  publish(destination: string, body: unknown) {
+    if (!this.connected) return false;
+    this.published.push({ destination, body: body as Record<string, unknown> });
+    return true;
+  }
+
+  emit(event: ChatEvent) { this.handlers?.onEvent(event); }
+
+  setState(state: ConnectionState, resumed = false) {
+    this.connected = state === 'connected';
+    this.handlers?.onState(state);
+    if (state === 'connected') this.handlers?.onConnected(resumed);
+  }
 }

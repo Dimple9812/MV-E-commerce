@@ -5,6 +5,7 @@ import { Check, CircleDashed, X } from 'lucide-react';
 import clsx from 'clsx';
 import { Dialog, EmptyState, ErrorState, Field, InlineError, PageHeader, PageSpinner, Pagination, ProductArt, StatusBadge, Textarea } from '@/components/ui';
 import { useToast } from '@/components/Toast';
+import { MessageSellerButton } from '@/features/chat';
 import { http } from '@/lib/api';
 import type { Order, OrderSummary, Page, Payment } from '@/lib/types';
 import { date, humanize, money, shortId } from '@/lib/format';
@@ -135,7 +136,11 @@ export function OrderDetailPage() {
             <section key={s.id} className="panel" aria-label={`Part shipped by ${s.vendorName}`}>
               <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3">
                 <h2 className="font-display text-lg font-bold">From {s.vendorName}</h2>
-                <StatusBadge status={s.status} />
+                <span className="flex items-center gap-2">
+                  <StatusBadge status={s.status} />
+                  <MessageSellerButton vendorId={s.vendorId} suborderId={s.id} attachLabel={`order ${shortId(o.id)} from ${s.vendorName}`}
+                    label="Message seller" className="px-3 py-1.5" />
+                </span>
               </header>
               {s.trackingNumber && (
                 <p className="border-b border-line px-5 py-2 text-sm">Shipped with {s.carrier}, tracking <span className="font-semibold">{s.trackingNumber}</span>{s.deliveredAt && `, delivered ${date(s.deliveredAt)}`}</p>

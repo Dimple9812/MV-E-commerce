@@ -50,6 +50,11 @@ export function onSessionChange(l: Listener): () => void {
   return () => listeners.delete(l);
 }
 
+/** The in-memory access token, for the chat connection (STOMP sends it in its CONNECT frame). */
+export function getAccessToken(): string | null {
+  return accessToken;
+}
+
 export function setSession(s: TokenResponse | null) {
   accessToken = s?.accessToken ?? null;
   listeners.forEach((l) => l(s));

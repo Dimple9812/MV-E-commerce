@@ -6,6 +6,7 @@ import { ApiError } from '@/lib/api';
 import { AuthProvider } from '@/auth/AuthProvider';
 import { CartProvider } from '@/cart/CartProvider';
 import { ToastProvider } from '@/components/Toast';
+import { ChatProvider } from '@/features/chat';
 import { App } from './App';
 import './styles.css';
 
@@ -36,8 +37,10 @@ async function start() {
           <AuthProvider>
             <CartProvider>
               <ToastProvider>
-                {Banner && <Banner />}
-                <App />
+                <ChatProvider>
+                  {Banner && <Banner />}
+                  <App />
+                </ChatProvider>
               </ToastProvider>
             </CartProvider>
           </AuthProvider>

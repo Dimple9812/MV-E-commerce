@@ -47,3 +47,26 @@ export function humanize(code?: string | null): string {
 export function initials(name: string): string {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
 }
+
+/** "Usually replies within an hour" from a median first-reply time in seconds. */
+export function replyTime(seconds?: number | null): string | null {
+  if (!seconds || seconds <= 0) return null;
+  if (seconds <= 15 * 60) return 'Usually replies within minutes';
+  if (seconds <= 3600) return 'Usually replies within an hour';
+  const hours = Math.ceil(seconds / 3600);
+  if (hours < 24) return `Usually replies within ${hours} hours`;
+  const days = Math.ceil(hours / 24);
+  return `Usually replies within ${days} day${days === 1 ? '' : 's'}`;
+}
+
+/** "10:42" today, "Mon 10:42" this week, otherwise a date. */
+export function chatTime(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  if (now.getTime() - d.getTime() < 6 * 86_400_000) {
+    return d.toLocaleString('en-US', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
