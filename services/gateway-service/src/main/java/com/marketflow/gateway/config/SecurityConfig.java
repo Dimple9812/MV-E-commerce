@@ -73,6 +73,9 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v1/products",
                                 "/api/v1/categories/**", "/api/v1/categories", "/api/v1/vendors/*",
                                 "/api/v1/vendors/*/products", "/api/v1/inventory/availability").permitAll()
+                        // WebSocket handshakes cannot carry a bearer header in browsers; chat-service authenticates
+                        // every STOMP session on CONNECT with the same JWT rules and checks the Origin.
+                        .pathMatchers(HttpMethod.GET, "/ws/chat", "/ws/chat/**").permitAll()
                         .pathMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .pathMatchers("/api/v1/vendor/**").hasRole("VENDOR")
                         .pathMatchers("/actuator/**").denyAll()

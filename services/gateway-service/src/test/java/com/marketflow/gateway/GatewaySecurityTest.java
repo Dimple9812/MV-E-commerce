@@ -27,6 +27,7 @@ import java.util.List;
         "marketflow.gateway.services.catalog=http://127.0.0.1:1",
         "marketflow.gateway.services.order=http://127.0.0.1:1",
         "marketflow.gateway.services.vendor=http://127.0.0.1:1",
+        "marketflow.gateway.services.chat=http://127.0.0.1:1",
         "management.server.port=0",
         "logging.structured.format.console="
 })
@@ -137,5 +138,37 @@ class GatewaySecurityTest {
         web.post().uri("/api/v1/auth/login").header("Content-Type", "application/json")
                 .header("Content-Length", String.valueOf(big.length)).bodyValue(big).exchange()
                 .expectStatus().isEqualTo(413);
+    }
+
+    @Test
+    void chatRoutesRequireTokenAndShopInboxRequiresVendorRole() {
+        web.get().uri("/api/v1/chat/conversations").exchange().expectStatus().isUnauthorized();
+        web.get().uri("/api/v1/chat/conversations").header("Authorization", "Bearer customer-token").exchange()
+                .expectStatus().isEqualTo(503); // routed to chat-service
+        web.get().uri("/api/v1/vendor/chat/conversations").header("Authorization", "Bearer customer-token")
+                .exchange().expectStatus().isForbidden();
+        web.get().uri("/api/v1/admin/chat/reports").header("Authorization", "Bearer vendor-token").exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    void chatAttachmentsMayBeLargerThanTheDefaultLimit() {
+        byte[] image = new byte[4 * 1024 * 1024];
+        web.post().uri("/api/v1/chat/attachments").header("Authorization", "Bearer customer-token")
+                .header("Content-Type", "application/octet-stream")
+                .header("Content-Length", String.valueOf(image.length)).bodyValue(image).exchange()
+                .expectStatus().isEqualTo(503); // passed the size filter, chat-service is down in this test
+        byte[] tooBig = new byte[7 * 1024 * 1024];
+        web.post().uri("/api/v1/chat/attachments").header("Authorization", "Bearer customer-token")
+                .header("Content-Type", "application/octet-stream")
+                .header("Content-Length", String.valueOf(tooBig.length)).bodyValue(tooBig).exchange()
+                .expectStatus().isEqualTo(413);
+    }
+
+    @Test
+    void websocketHandshakeIsNotBlockedByBearerAuthentication() {
+        // no Authorization header: the gateway must route it (chat-service authenticates the STOMP CONNECT)
+        web.get().uri("/ws/chat").exchange().expectStatus().value(code ->
+                org.assertj.core.api.Assertions.assertThat(code).isNotIn(401, 403));
     }
 }
