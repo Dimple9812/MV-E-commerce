@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/chat.events.ConversationReported.v1.schema.json",
+  "title": "ConversationReported v1",
+  "description": "A participant reported a conversation to MarketFlow support (reviewed in Admin > Chat reports).",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "ConversationReported"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "conversationId",
+        "reason",
+        "reportId",
+        "reporterSide",
+        "vendorId"
+      ],
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "conversationId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reporterSide": {
+          "type": "string",
+          "examples": [
+            "BUYER",
+            "VENDOR"
+          ],
+          "description": "open enumeration: known values BUYER, VENDOR"
+        },
+        "reason": {
+          "type": "string",
+          "examples": [
+            "SPAM",
+            "SCAM",
+            "ABUSE",
+            "OFF_PLATFORM_PAYMENT",
+            "OTHER"
+          ],
+          "description": "open enumeration: known values SPAM, SCAM, ABUSE, OFF_PLATFORM_PAYMENT, OTHER"
+        }
+      }
+    }
+  },
+  "x-topic": "chat.events",
+  "x-producer": "chat-service",
+  "x-consumers": [],
+  "x-key": "conversationId"
+}

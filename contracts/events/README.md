@@ -66,6 +66,7 @@ not emitted in those sessions (for example `ProductBlocked`, `VendorSuspended`, 
 | `payment.commands` | order-service | orderId | 3 | `payment.commands.dlt` |
 | `payment.events` | payment-service | orderId | 3 | `payment.events.dlt` |
 | `review.events` | review-service | productId | 3 | `review.events.dlt` |
+| `chat.events` | chat-service | conversationId | 3 | `chat.events.dlt` |
 | `platform.audit.events` | every service | resourceId | 3 | `platform.audit.events.dlt` |
 
 Partitions default to 3 (`marketflow.kafka.partitions`) and replication to 1 locally
@@ -86,20 +87,20 @@ independently.
 | `identity.user.events` | UserRolesChanged | identity-service | notification-service |
 | `identity.user.events` | UserStatusChanged | identity-service | notification-service |
 | `identity.user.events` | PasswordChanged | identity-service | notification-service |
-| `vendor.events` | VendorApplicationSubmitted | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service |
-| `vendor.events` | VendorApproved | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service |
-| `vendor.events` | VendorRejected | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service |
-| `vendor.events` | VendorSuspended | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service |
-| `vendor.events` | VendorReinstated | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service |
-| `vendor.events` | VendorProfileUpdated | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service |
-| `vendor.events` | VendorCommissionChanged | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service |
-| `catalog.product.events` | ProductCreated | catalog-service | inventory-service, order-service |
-| `catalog.product.events` | ProductUpdated | catalog-service | inventory-service, order-service |
-| `catalog.product.events` | ProductPublished | catalog-service | inventory-service, order-service |
-| `catalog.product.events` | ProductPriceChanged | catalog-service | inventory-service, order-service |
-| `catalog.product.events` | ProductArchived | catalog-service | inventory-service, order-service |
-| `catalog.product.events` | ProductBlocked | catalog-service | inventory-service, order-service |
-| `catalog.product.events` | ProductDeleted | catalog-service | inventory-service, order-service |
+| `vendor.events` | VendorApplicationSubmitted | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service, chat-service |
+| `vendor.events` | VendorApproved | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service, chat-service |
+| `vendor.events` | VendorRejected | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service, chat-service |
+| `vendor.events` | VendorSuspended | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service, chat-service |
+| `vendor.events` | VendorReinstated | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service, chat-service |
+| `vendor.events` | VendorProfileUpdated | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service, chat-service |
+| `vendor.events` | VendorCommissionChanged | vendor-service | identity-service, catalog-service, inventory-service, order-service, notification-service, analytics-service, chat-service |
+| `catalog.product.events` | ProductCreated | catalog-service | inventory-service, order-service, chat-service |
+| `catalog.product.events` | ProductUpdated | catalog-service | inventory-service, order-service, chat-service |
+| `catalog.product.events` | ProductPublished | catalog-service | inventory-service, order-service, chat-service |
+| `catalog.product.events` | ProductPriceChanged | catalog-service | inventory-service, order-service, chat-service |
+| `catalog.product.events` | ProductArchived | catalog-service | inventory-service, order-service, chat-service |
+| `catalog.product.events` | ProductBlocked | catalog-service | inventory-service, order-service, chat-service |
+| `catalog.product.events` | ProductDeleted | catalog-service | inventory-service, order-service, chat-service |
 | `inventory.commands` | InventoryReservationRequested | order-service | inventory-service |
 | `inventory.commands` | InventoryConfirmationRequested | order-service | inventory-service |
 | `inventory.commands` | InventoryReleaseRequested | order-service | inventory-service |
@@ -111,12 +112,12 @@ independently.
 | `inventory.events` | InventoryRestocked | inventory-service | order-service |
 | `inventory.events` | StockLevelChanged | inventory-service | catalog-service, notification-service, analytics-service |
 | `inventory.events` | LowStockDetected | inventory-service | notification-service, analytics-service |
-| `order.events` | OrderCreated | order-service | vendor-service, notification-service, analytics-service, review-service |
-| `order.events` | OrderConfirmed | order-service | vendor-service, notification-service, analytics-service, review-service |
-| `order.events` | OrderCancelled | order-service | vendor-service, notification-service, analytics-service, review-service |
+| `order.events` | OrderCreated | order-service | vendor-service, notification-service, analytics-service, review-service, chat-service |
+| `order.events` | OrderConfirmed | order-service | vendor-service, notification-service, analytics-service, review-service, chat-service |
+| `order.events` | OrderCancelled | order-service | vendor-service, notification-service, analytics-service, review-service, chat-service |
 | `order.events` | OrderStatusChanged | order-service | notification-service, analytics-service |
-| `order.events` | ShipmentCreated | order-service | notification-service, analytics-service |
-| `order.events` | SuborderDelivered | order-service | review-service, analytics-service |
+| `order.events` | ShipmentCreated | order-service | notification-service, analytics-service, chat-service |
+| `order.events` | SuborderDelivered | order-service | review-service, analytics-service, chat-service |
 | `order.events` | OrderDelivered | order-service | notification-service, analytics-service |
 | `order.events` | RefundRequested | order-service | notification-service, analytics-service |
 | `payment.commands` | PaymentAuthorizationRequested | order-service | payment-service |
@@ -137,6 +138,8 @@ independently.
 | `review.events` | ReviewHidden | review-service | analytics-service |
 | `review.events` | ReviewRestored | review-service | analytics-service |
 | `review.events` | ProductRatingUpdated | review-service | catalog-service |
+| `chat.events` | ChatMessageSent | chat-service | notification-service |
+| `chat.events` | ConversationReported | chat-service | (admin review in chat-service; audit via AuditRecorded) |
 | `platform.audit.events` | AuditRecorded | every service | analytics-service |
 
 The master brief's `NotificationRequested` is not a separate event: notification-service derives every

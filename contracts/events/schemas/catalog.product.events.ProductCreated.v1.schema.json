@@ -145,7 +145,8 @@
   "x-producer": "catalog-service",
   "x-consumers": [
     "inventory-service",
-    "order-service"
+    "order-service",
+    "chat-service"
   ],
   "x-key": "productId"
 }

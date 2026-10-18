@@ -55,7 +55,8 @@
   "x-producer": "order-service",
   "x-consumers": [
     "notification-service",
-    "analytics-service"
+    "analytics-service",
+    "chat-service"
   ],
   "x-key": "orderId"
 }

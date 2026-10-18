@@ -56,7 +56,8 @@
   "x-producer": "order-service",
   "x-consumers": [
     "review-service",
-    "analytics-service"
+    "analytics-service",
+    "chat-service"
   ],
   "x-key": "orderId"
 }

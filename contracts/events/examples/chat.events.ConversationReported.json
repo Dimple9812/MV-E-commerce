@@ -1,0 +1,21 @@
+{
+  "topic": "chat.events",
+  "key": "8ceca185-578d-4a73-8754-a39ac3b4e9e5",
+  "value": {
+    "eventId": "100fb992-f679-4731-bd87-48489c170b6d",
+    "payload": {
+      "reason": "SCAM",
+      "reportId": "511e51e8-50a1-4ae5-b045-67bde8107c7e",
+      "vendorId": "8461793b-aff4-450e-b978-80c43f777e6c",
+      "reporterSide": "BUYER",
+      "conversationId": "8ceca185-578d-4a73-8754-a39ac3b4e9e5"
+    },
+    "producer": "chat-service",
+    "eventType": "ConversationReported",
+    "occurredAt": "2026-10-18T19:43:36.080700551Z",
+    "aggregateId": "8ceca185-578d-4a73-8754-a39ac3b4e9e5",
+    "aggregateType": "Conversation",
+    "correlationId": "f85eea8f-c647-45a8-b099-19bccbf72a99",
+    "schemaVersion": 1
+  }
+}
