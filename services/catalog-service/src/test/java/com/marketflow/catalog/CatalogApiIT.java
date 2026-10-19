@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketflow.catalog.cache.CacheKeys;
 import com.marketflow.test.KafkaTestClient;
 import com.marketflow.test.MarketflowIntegrationTest;
+import com.marketflow.test.PostgresInitializer;
 import com.marketflow.test.RedisInitializer;
 import com.marketflow.test.TestJwt;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @MarketflowIntegrationTest
-@ContextConfiguration(initializers = RedisInitializer.class)
+@ContextConfiguration(initializers = {PostgresInitializer.class, RedisInitializer.class})
 @TestPropertySource(properties = "marketflow.catalog.image-dir=target/test-images")
 class CatalogApiIT {
 
