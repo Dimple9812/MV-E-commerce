@@ -74,6 +74,7 @@ services:
       NOTIFICATION_URI: http://notification-service:8087
       REVIEW_URI: http://review-service:8088
       ANALYTICS_URI: http://analytics-service:8089
+      CHAT_URI: http://chat-service:8091
   identity-service:
     port: 8081
     db: identity_db
@@ -116,6 +117,15 @@ services:
     db: analytics_db
     autoscaling: { enabled: false }
     replicas: 1
+  # Stateless apart from WebSocket sessions: any replica serves any user, deliveries between replicas go through
+  # Redis pub/sub, so it scales horizontally without sticky sessions. Clients reconnect and resync on rollout.
+  chat-service:
+    port: 8091
+    db: chat_db
+    redis: true
+    env:
+      # behind the ingress the browser's Origin is the public host
+      CHAT_ALLOWED_ORIGINS: https://marketflow.example.com
 
 frontend:
   enabled: true
@@ -138,6 +148,12 @@ ingress:
     enabled: true
     secretName: marketflow-tls
   annotations: {}
+  # /ws (chat WebSockets) gets its own Ingress so long-lived connections get long timeouts without changing /api
+  websocket:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 
 metrics:
   serviceMonitor: false        # set true when the Prometheus Operator CRDs are installed

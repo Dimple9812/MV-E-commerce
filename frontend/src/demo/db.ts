@@ -7,6 +7,7 @@ import type {
   Address, AdminReview, AuditEntry, Category, EarningsEntry, InboxItem, Order, Payment, Payout, ProductImage,
   Role, SagaView, StockMovement, User, Vendor,
 } from '@/lib/types';
+import { emptyChat, seedChats, type DemoChat } from './chat';
 
 export const DEMO_PASSWORD = 'DemoPass2026!';
 
@@ -74,10 +75,12 @@ export interface DemoDB {
   earnings: (EarningsEntry & { vendorId: string })[];
   payouts: Payout[];
   audit: AuditEntry[];
+  chat: DemoChat;
   seq: number;
 }
 
-export const DB_VERSION = 1;
+/** 2: buyer-seller chat (stored data of version 1 is replaced by fresh sample data once) */
+export const DB_VERSION = 2;
 
 // ---------- helpers ----------
 
@@ -196,7 +199,7 @@ export function seed(now = Date.now()): DemoDB {
   const db: DemoDB = {
     version: DB_VERSION, createdAt: iso(now), users: [], addresses: {}, categories: CATEGORIES.map((c) => ({ ...c })),
     vendors: [], products: [], reviews: [], orders: [], payments: [], notifications: [], movements: [], earnings: [],
-    payouts: [], audit: [], seq: 1000,
+    payouts: [], audit: [], chat: emptyChat(), seq: 1000,
   };
   const addUser = (email: string, fullName: string, roles: Role[], createdDaysAgo: number) => {
     const u: DemoUser = { id: fixedId(1), email, fullName, roles, status: 'ACTIVE', createdAt: iso(now - createdDaysAgo * day), password: DEMO_PASSWORD };
@@ -301,6 +304,7 @@ export function seed(now = Date.now()): DemoDB {
   // A failed e-mail in the retry/DLT pipeline, so the operations page shows what that view is for.
   db.audit.push(auditEntry('catalog-service', admin.id, 'ADMIN', 'CATEGORY_UPDATED', 'category', CAT['decor']!, 'description changed', now - 9 * day));
   db.audit.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+  seedChats(db, now);
   return db;
 }
 

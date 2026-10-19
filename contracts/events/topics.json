@@ -62,7 +62,8 @@
             "inventory-service",
             "order-service",
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "A customer applied to sell."
         },
@@ -76,7 +77,8 @@
             "inventory-service",
             "order-service",
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "Application approved; identity grants the VENDOR role."
         },
@@ -90,7 +92,8 @@
             "inventory-service",
             "order-service",
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "Application rejected with a reason."
         },
@@ -104,7 +107,8 @@
             "inventory-service",
             "order-service",
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "Seller suspended; catalog hides their products, checkout rejects them."
         },
@@ -118,7 +122,8 @@
             "inventory-service",
             "order-service",
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "Suspension lifted."
         },
@@ -132,7 +137,8 @@
             "inventory-service",
             "order-service",
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "Shop name, description or contact details changed."
         },
@@ -146,7 +152,8 @@
             "inventory-service",
             "order-service",
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "Commission rate changed by an administrator."
         }
@@ -165,7 +172,8 @@
           "schema": "schemas/catalog.product.events.ProductCreated.v1.schema.json",
           "consumers": [
             "inventory-service",
-            "order-service"
+            "order-service",
+            "chat-service"
           ],
           "description": "Draft created with its variants."
         },
@@ -175,7 +183,8 @@
           "schema": "schemas/catalog.product.events.ProductUpdated.v1.schema.json",
           "consumers": [
             "inventory-service",
-            "order-service"
+            "order-service",
+            "chat-service"
           ],
           "description": "Details, variants or images changed."
         },
@@ -185,7 +194,8 @@
           "schema": "schemas/catalog.product.events.ProductPublished.v1.schema.json",
           "consumers": [
             "inventory-service",
-            "order-service"
+            "order-service",
+            "chat-service"
           ],
           "description": "Visible in the storefront and purchasable."
         },
@@ -195,7 +205,8 @@
           "schema": "schemas/catalog.product.events.ProductPriceChanged.v1.schema.json",
           "consumers": [
             "inventory-service",
-            "order-service"
+            "order-service",
+            "chat-service"
           ],
           "description": "A variant price changed; priceChange carries old and new price."
         },
@@ -205,7 +216,8 @@
           "schema": "schemas/catalog.product.events.ProductArchived.v1.schema.json",
           "consumers": [
             "inventory-service",
-            "order-service"
+            "order-service",
+            "chat-service"
           ],
           "description": "Withdrawn by the seller."
         },
@@ -215,7 +227,8 @@
           "schema": "schemas/catalog.product.events.ProductBlocked.v1.schema.json",
           "consumers": [
             "inventory-service",
-            "order-service"
+            "order-service",
+            "chat-service"
           ],
           "description": "Blocked by moderation."
         },
@@ -225,7 +238,8 @@
           "schema": "schemas/catalog.product.events.ProductDeleted.v1.schema.json",
           "consumers": [
             "inventory-service",
-            "order-service"
+            "order-service",
+            "chat-service"
           ],
           "description": "Never-published draft deleted (status DELETED)."
         }
@@ -366,7 +380,8 @@
             "vendor-service",
             "notification-service",
             "analytics-service",
-            "review-service"
+            "review-service",
+            "chat-service"
           ],
           "description": "Pending order and suborders created; the saga starts."
         },
@@ -378,7 +393,8 @@
             "vendor-service",
             "notification-service",
             "analytics-service",
-            "review-service"
+            "review-service",
+            "chat-service"
           ],
           "description": "Payment captured and stock confirmed."
         },
@@ -390,7 +406,8 @@
             "vendor-service",
             "notification-service",
             "analytics-service",
-            "review-service"
+            "review-service",
+            "chat-service"
           ],
           "description": "Cancelled by compensation or by the customer."
         },
@@ -410,7 +427,8 @@
           "schema": "schemas/order.events.ShipmentCreated.v1.schema.json",
           "consumers": [
             "notification-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "A seller shipped their suborder."
         },
@@ -420,7 +438,8 @@
           "schema": "schemas/order.events.SuborderDelivered.v1.schema.json",
           "consumers": [
             "review-service",
-            "analytics-service"
+            "analytics-service",
+            "chat-service"
           ],
           "description": "A suborder was delivered; its products become reviewable."
         },
@@ -648,6 +667,31 @@
             "catalog-service"
           ],
           "description": "Recomputed aggregate rating of a product."
+        }
+      ]
+    },
+    "chat.events": {
+      "producer": "chat-service",
+      "key": "conversationId",
+      "aggregate": "Conversation",
+      "partitions": 3,
+      "deadLetterTopic": "chat.events.dlt",
+      "events": [
+        {
+          "eventType": "ChatMessageSent",
+          "schemaVersion": 1,
+          "schema": "schemas/chat.events.ChatMessageSent.v1.schema.json",
+          "consumers": [
+            "notification-service"
+          ],
+          "description": "A buyer or a shop wrote in a conversation; the other side should be notified."
+        },
+        {
+          "eventType": "ConversationReported",
+          "schemaVersion": 1,
+          "schema": "schemas/chat.events.ConversationReported.v1.schema.json",
+          "consumers": [],
+          "description": "A participant reported a conversation to MarketFlow support (reviewed in Admin > Chat reports)."
         }
       ]
     },

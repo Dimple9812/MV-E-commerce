@@ -15,13 +15,17 @@ import {
   round2, sagaMove, seed, slugify, statusChange,
   type DemoDB, type DemoOrder, type DemoProduct, type DemoUser, type DemoVariant, type PricedLine,
 } from './db';
+import { ChatHttpError, installChat, orderEvent, registerChatRoutes } from './chat';
 
 const DB_KEY = 'marketflow.demo.db.v1';
+/** bumped on every save, so other tabs know to reload the database before handling their next request */
+const REV_KEY = 'marketflow.demo.db.rev';
 const SESSION_KEY = 'marketflow.demo.session';
 
 // ---------- persistence ----------
 
 let db: DemoDB = load();
+let rev = readRev();
 
 function load(): DemoDB {
   try {
@@ -34,26 +38,57 @@ function load(): DemoDB {
   return seed();
 }
 
+function readRev(): string | null {
+  try { return window.localStorage.getItem(REV_KEY); } catch { return null; }
+}
+
+/**
+ * Several tabs share one database in localStorage. Each tab reloads it when another tab has saved since, right
+ * before handling a request, so a tab never writes back a stale copy over another tab's changes (two people
+ * chatting in two tabs both write to it).
+ */
+function sync() {
+  const current = readRev();
+  if (current !== rev) {
+    db = load();
+    rev = current;
+  }
+}
+
 function save() {
   try {
     window.localStorage.setItem(DB_KEY, JSON.stringify(db));
+    rev = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    window.localStorage.setItem(REV_KEY, rev);
   } catch {
     /* quota exceeded (large uploaded images) or storage blocked: keep working in memory for this tab */
   }
 }
 
+/**
+ * The signed-in demo user is remembered per tab (sessionStorage), so one tab can be the Customer and another the
+ * Seller at the same time. A new tab starts as whoever signed in last (localStorage).
+ */
 function getSession(): string | null {
-  try { return window.localStorage.getItem(SESSION_KEY); } catch { return memorySession; }
+  try {
+    return window.sessionStorage.getItem(SESSION_KEY) ?? window.localStorage.getItem(SESSION_KEY);
+  } catch { return memorySession; }
 }
 let memorySession: string | null = null;
 function setSessionUser(id: string | null) {
   memorySession = id;
   try {
-    if (id) window.localStorage.setItem(SESSION_KEY, id); else window.localStorage.removeItem(SESSION_KEY);
+    if (id) {
+      window.sessionStorage.setItem(SESSION_KEY, id);
+      window.localStorage.setItem(SESSION_KEY, id);
+    } else {
+      window.sessionStorage.removeItem(SESSION_KEY);
+      window.localStorage.removeItem(SESSION_KEY);
+    }
   } catch { /* in-memory only */ }
 }
 
-/** Throws away every change this visitor made and starts again from the sample data. */
+/** Throws away every change this visitor made (chats included) and starts again from the sample data. */
 export function resetDemo() {
   db = seed();
   save();
@@ -104,6 +139,7 @@ const latency = () => new Promise((r) => setTimeout(r, 90 + Math.random() * 160)
 
 async function handle(method: string, url: URL, init: RequestInit | undefined): Promise<Response> {
   await latency();
+  sync();
   const now = Date.now();
   if (tick(now)) save();
   const headers = new Headers(init?.headers);
@@ -125,8 +161,9 @@ async function handle(method: string, url: URL, init: RequestInit | undefined): 
       const status = result === undefined ? 204 : method === 'POST' && /\/(register|checkout|applications|products|variants|images|upload|refunds|addresses|reviews|categories)$/.test(url.pathname) ? 201 : 200;
       return json(status, result);
     } catch (e) {
-      if (e instanceof HttpError) {
-        return json(e.status, { type: `https://marketflow.dev/problems/${e.code}`, title: e.message, status: e.status, detail: e.message, code: e.code, correlationId: newId(), errors: e.fieldErrors });
+      if (e instanceof HttpError || e instanceof ChatHttpError) {
+        if (e instanceof ChatHttpError && method !== 'GET') save(); // e.g. a refused message is still recorded
+        return json(e.status, { type: `https://marketflow.dev/problems/${e.code}`, title: e.message, status: e.status, detail: e.message, code: e.code, correlationId: newId(), errors: e instanceof HttpError ? e.fieldErrors : undefined });
       }
       console.error('[demo] handler failed', e);
       return json(500, { status: 500, title: 'Internal error', detail: 'The demo backend hit an unexpected error.', code: 'internal_error' });
@@ -137,6 +174,7 @@ async function handle(method: string, url: URL, init: RequestInit | undefined): 
 
 /** Routes /api/* fetches to the demo backend; everything else goes to the network as usual. */
 export function installDemoBackend() {
+  installChat({ db: () => { sync(); return db; }, save });
   const realFetch = window.fetch.bind(window);
   window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -308,6 +346,7 @@ function cancelOrder(o: DemoOrder, reason: string, at: number) {
   o.cancelReason = reason;
   o.cancelledAt = iso(at);
   o.suborders.forEach((s) => { s.status = 'CANCELLED'; });
+  orderEvent(db, o, 'CANCELLED', at);
   notify(db, o.customerId, 'ORDER_CANCELLED', 'Your order was cancelled', 'You have not been charged, or your payment has been refunded in full.', `/account/orders/${o.id}`, at);
 }
 
@@ -365,6 +404,7 @@ function stepSaga(o: DemoOrder, at: number) {
       lines(o).forEach(({ i, fv }) => fv && moveStock(db, fv.v, 'CONFIRM', { r: -i.quantity, s: 0 + i.quantity }, 'ORDER', o.id, at));
       sagaMove(o, 'CONFIRMED', 'InventoryReservationConfirmed', at);
       bookConfirmation(db, o, at);
+      orderEvent(db, o, 'CONFIRMED', at);
       break;
     case 'COMPENSATING':
       lines(o).forEach(({ i, fv }) => fv && moveStock(db, fv.v, 'RELEASE', { a: i.quantity, r: -i.quantity }, 'ORDER', o.id, at));
@@ -933,6 +973,7 @@ POST('/api/v1/vendor/suborders/:id/ship', (r) => {
   statusChange(o, 'SHIPPED', r.now, null, s.id);
   Object.assign(s, { status: 'SHIPPED', carrier: str(b.carrier), trackingNumber: str(b.trackingNumber), shippedAt: iso(r.now) });
   rollUp(o, r.now);
+  orderEvent(db, o, 'SHIPPED', r.now, s.id);
   notify(db, o.customerId, 'SUBORDER_SHIPPED', `${s.vendorName} shipped your items`, `Tracking ${s.trackingNumber} with ${s.carrier}.`, `/account/orders/${o.id}`, r.now);
   return vendorSuborder(o, s);
 });
@@ -943,6 +984,7 @@ POST('/api/v1/vendor/suborders/:id/deliver', (r) => {
   s.status = 'DELIVERED';
   s.deliveredAt = iso(r.now);
   rollUp(o, r.now);
+  orderEvent(db, o, 'DELIVERED', r.now, s.id);
   notify(db, o.customerId, 'SUBORDER_DELIVERED', 'Delivered', `Your items from ${s.vendorName} were delivered. How was it? Leave a review.`, `/account/orders/${o.id}`, r.now);
   return vendorSuborder(o, s);
 });
@@ -1212,6 +1254,10 @@ GET('/api/v1/admin/audit', (r) => {
   const list: AuditEntry[] = db.audit.filter((a) => (!action || a.action.includes(action)) && (!rid || a.resource_id.startsWith(rid)));
   return paginate(list, r.query, 50);
 });
+
+// ---------- chat (chat-service) ----------
+
+registerChatRoutes({ GET, POST, PUT, PATCH, DEL });
 
 export const DEMO_ACCOUNTS = [
   { role: 'Customer', email: 'ada@demo.marketflow.local' },

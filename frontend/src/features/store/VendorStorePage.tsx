@@ -4,6 +4,7 @@ import { EmptyState, ErrorState, PageSpinner, Pagination } from '@/components/ui
 import { date, initials } from '@/lib/format';
 import { useProducts, useVendor } from './catalog';
 import { ProductGrid } from './ProductCard';
+import { MessageSellerButton } from '@/features/chat';
 
 export function VendorStorePage() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export function VendorStorePage() {
           {v.description && <p className="mt-2 max-w-2xl text-slate">{v.description}</p>}
           <p className="mt-2 text-sm text-slate">Ships from {v.country}. Selling on MarketFlow since {date(v.memberSince)}.</p>
         </div>
+        <div className="sm:ml-auto"><MessageSellerButton vendorId={v.id} label={`Message ${v.businessName}`} /></div>
       </header>
       {products.isError ? <ErrorState error={products.error} onRetry={() => products.refetch()} />
         : products.data?.items.length === 0 ? <EmptyState title="Nothing on the shelves yet">This seller has not published products yet.</EmptyState>

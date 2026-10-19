@@ -182,6 +182,129 @@ erDiagram
     product ||--o{ product_image : "product_id"
 ```
 
+## chat-service
+
+```mermaid
+erDiagram
+    conversation {
+        uuid id PK
+        uuid buyer_id
+        varchar_120 buyer_name
+        uuid vendor_id
+        uuid product_id
+        uuid suborder_id
+        varchar_16 status
+        timestamptz last_message_at
+        bigint last_message_id
+        timestamptz created_at
+    }
+    message {
+        bigint id PK
+        uuid conversation_id FK
+        uuid sender_id
+        varchar_10 sender_role
+        varchar_16 type
+        varchar_2000 body
+        varchar_300 attachment_url
+        jsonb metadata
+        uuid client_message_id
+        timestamptz created_at
+        timestamptz edited_at
+        timestamptz deleted_at
+    }
+    conversation_participant {
+        uuid conversation_id PK,FK
+        uuid user_id PK
+        varchar_6 side
+        bigint last_read_message_id
+        boolean muted
+        timestamptz joined_at
+    }
+    attachment {
+        uuid id PK
+        uuid conversation_id FK
+        uuid uploader_id
+        varchar_20 content_type
+        int size_bytes
+        bytea bytes
+        timestamptz created_at
+    }
+    conversation_report {
+        uuid id PK
+        uuid conversation_id FK
+        uuid reporter_id
+        varchar_6 reporter_side
+        varchar_30 reason
+        varchar_1000 details
+        varchar_10 status
+        varchar_20 resolution
+        varchar_1000 resolution_note
+        uuid resolved_by
+        timestamptz resolved_at
+        timestamptz created_at
+    }
+    content_violation {
+        bigserial id PK
+        uuid conversation_id FK
+        uuid user_id
+        varchar_100 kinds
+        timestamptz created_at
+    }
+    quick_reply {
+        uuid id PK
+        uuid vendor_id
+        varchar_60 title
+        varchar_1000 body
+        int sort_order
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    vendor_response_stats {
+        uuid vendor_id PK
+        int median_first_reply_seconds
+        int sample_size
+        timestamptz updated_at
+    }
+    vendor_projection {
+        uuid vendor_id PK
+        uuid owner_user_id UK
+        varchar_120 business_name
+        varchar_140 slug
+        varchar_20 status
+        bigint vendor_version
+        timestamptz updated_at
+    }
+    product_projection {
+        uuid product_id PK
+        uuid vendor_id
+        varchar_200 name
+        varchar_220 slug
+        varchar_500 image_url
+        numeric_12_2 min_price
+        varchar_3 currency
+        varchar_20 status
+        bigint product_version
+        timestamptz updated_at
+    }
+    suborder_projection {
+        uuid suborder_id PK
+        uuid order_id
+        uuid customer_id
+        uuid vendor_id
+        varchar_30 status
+        numeric_12_2 total
+        varchar_3 currency
+        jsonb item_summary
+        timestamptz placed_at
+        timestamptz updated_at
+    }
+    conversation ||--o{ message : "conversation_id"
+    conversation ||--o{ conversation_participant : "conversation_id"
+    conversation ||--o{ attachment : "conversation_id"
+    conversation ||--o{ conversation_report : "conversation_id"
+    conversation ||--o{ content_violation : "conversation_id"
+```
+
 ## identity-service
 
 ```mermaid

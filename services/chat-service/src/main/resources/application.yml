@@ -1,0 +1,50 @@
+server:
+  port: ${PORT:8091}
+  tomcat:
+    # image attachments are up to 5 MB (the platform default is 2 MB)
+    max-swallow-size: 6MB
+    # Every open WebSocket holds one Tomcat connection, so this caps sessions per instance (Tomcat's default,
+    # stated here because it is the hard limit). Size it with the heap: an idle session costs about 95 KB
+    # (load-tests/README.md#chat), so 8,192 sessions need roughly 1 GB.
+    max-connections: ${CHAT_MAX_CONNECTIONS:8192}
+
+spring:
+  application:
+    name: chat-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/chat_db}
+    username: ${DB_USERNAME:chat_svc}
+    password: ${DB_PASSWORD:}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 500ms
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+marketflow:
+  kafka:
+    produces: chat.events,platform.audit.events
+    consumes: vendor.events,catalog.product.events,order.events
+  chat:
+    # browser origins allowed to open the WebSocket directly (behind nginx the Origin header is checked there
+    # and removed, exactly like /api; requests without an Origin header are accepted)
+    allowed-origins: ${CHAT_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173}
+    max-message-length: 2000
+    edit-window: 10m
+    rate-limit:
+      messages: ${CHAT_RATE_LIMIT_MESSAGES:20}
+      window: ${CHAT_RATE_LIMIT_WINDOW:10s}
+      typing-interval: 2s
+    attachment-max-bytes: 5242880
+    presence-ttl: 90s
+    heartbeat: 10s
+    fanout-channel: chat:fanout
+    # hosts whose links are treated as off-platform payment or contact channels
+    blocked-link-hosts: >-
+      paypal.me,paypal.com,venmo.com,cash.app,wa.me,whatsapp.com,t.me,telegram.me,revolut.me,
+      buymeacoffee.com,ko-fi.com,pay.google.com,gpay.app.goo.gl,paytm.me,phon.pe,razorpay.me,
+      wise.com,zelle.com,payoneer.com,skrill.com

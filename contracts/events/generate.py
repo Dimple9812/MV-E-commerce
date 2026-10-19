@@ -107,7 +107,7 @@ TOPICS = {
         ]},
     "vendor.events": {
         "producer": "vendor-service", "key": "vendorId", "aggregate": "Vendor",
-        "events": [(t, VENDOR, ["identity-service", "catalog-service", "inventory-service", "order-service", "notification-service", "analytics-service"], d) for t, d in [
+        "events": [(t, VENDOR, ["identity-service", "catalog-service", "inventory-service", "order-service", "notification-service", "analytics-service", "chat-service"], d) for t, d in [
             ("VendorApplicationSubmitted", "A customer applied to sell."),
             ("VendorApproved", "Application approved; identity grants the VENDOR role."),
             ("VendorRejected", "Application rejected with a reason."),
@@ -118,7 +118,7 @@ TOPICS = {
         ]]},
     "catalog.product.events": {
         "producer": "catalog-service", "key": "productId", "aggregate": "Product",
-        "events": [(t, PRODUCT, ["inventory-service", "order-service"], d) for t, d in [
+        "events": [(t, PRODUCT, ["inventory-service", "order-service", "chat-service"], d) for t, d in [
             ("ProductCreated", "Draft created with its variants."),
             ("ProductUpdated", "Details, variants or images changed."),
             ("ProductPublished", "Visible in the storefront and purchasable."),
@@ -156,14 +156,14 @@ TOPICS = {
     "order.events": {
         "producer": "order-service", "key": "orderId", "aggregate": "Order",
         "events": [
-            ("OrderCreated", ORDER, ["vendor-service", "notification-service", "analytics-service", "review-service"], "Pending order and suborders created; the saga starts."),
-            ("OrderConfirmed", ORDER, ["vendor-service", "notification-service", "analytics-service", "review-service"], "Payment captured and stock confirmed."),
-            ("OrderCancelled", ORDER, ["vendor-service", "notification-service", "analytics-service", "review-service"], "Cancelled by compensation or by the customer."),
+            ("OrderCreated", ORDER, ["vendor-service", "notification-service", "analytics-service", "review-service", "chat-service"], "Pending order and suborders created; the saga starts."),
+            ("OrderConfirmed", ORDER, ["vendor-service", "notification-service", "analytics-service", "review-service", "chat-service"], "Payment captured and stock confirmed."),
+            ("OrderCancelled", ORDER, ["vendor-service", "notification-service", "analytics-service", "review-service", "chat-service"], "Cancelled by compensation or by the customer."),
             ("OrderStatusChanged", ORDER_STATUS, ["notification-service", "analytics-service"], "Other status changes (FAILED, REFUND_FAILED)."),
             ("ShipmentCreated", obj({"orderId": UUID, "suborderId": UUID, "vendorId": UUID, "customerId": UUID, "carrier": STR, "trackingNumber": STR}),
-             ["notification-service", "analytics-service"], "A seller shipped their suborder."),
+             ["notification-service", "analytics-service", "chat-service"], "A seller shipped their suborder."),
             ("SuborderDelivered", obj({"orderId": UUID, "suborderId": UUID, "vendorId": UUID, "customerId": UUID, "productIds": arr(UUID, 1)}),
-             ["review-service", "analytics-service"], "A suborder was delivered; its products become reviewable."),
+             ["review-service", "analytics-service", "chat-service"], "A suborder was delivered; its products become reviewable."),
             ("OrderDelivered", ORDER_STATUS, ["notification-service", "analytics-service"], "Every suborder delivered."),
             ("RefundRequested", obj({"orderId": UUID, "customerId": UUID, "amount": MONEY, "reason": STR}),
              ["notification-service", "analytics-service"], "Informational: a refund was requested for a cancelled confirmed order."),
@@ -200,6 +200,21 @@ TOPICS = {
             ("ReviewRestored", "Moderator restored a review."),
         ]] + [("ProductRatingUpdated", obj({"productId": UUID, "averageRating": {"type": "number", "minimum": 0, "maximum": 5}, "reviewCount": INT0}),
                ["catalog-service"], "Recomputed aggregate rating of a product.")]},
+    "chat.events": {
+        "producer": "chat-service", "key": "conversationId", "aggregate": "Conversation",
+        "events": [
+            ("ChatMessageSent", obj({"conversationId": UUID, "messageId": {"type": "integer", "minimum": 1}, "vendorId": UUID,
+                                     "buyerId": UUID, "senderRole": open_enum("BUYER", "VENDOR"), "senderName": STR,
+                                     "recipientUserIds": arr(UUID), "recipientSide": open_enum("BUYER", "VENDOR"),
+                                     "messageType": open_enum("TEXT", "IMAGE", "PRODUCT_CARD", "ORDER_CARD"), "sentAt": TS},
+                                    {"productId": nullable(UUID), "suborderId": nullable(UUID)},
+                                    "Never contains the message text. recipientUserIds excludes people who muted the conversation."),
+             ["notification-service"], "A buyer or a shop wrote in a conversation; the other side should be notified."),
+            ("ConversationReported", obj({"reportId": UUID, "conversationId": UUID, "vendorId": UUID,
+                                          "reporterSide": open_enum("BUYER", "VENDOR"),
+                                          "reason": open_enum("SPAM", "SCAM", "ABUSE", "OFF_PLATFORM_PAYMENT", "OTHER")}),
+             [], "A participant reported a conversation to MarketFlow support (reviewed in Admin > Chat reports)."),
+        ]},
     "platform.audit.events": {
         "producer": "every service", "key": "resourceId", "aggregate": "any",
         "events": [("AuditRecorded", obj({"service": STR, "action": STR, "resourceType": STR, "resourceId": STR,

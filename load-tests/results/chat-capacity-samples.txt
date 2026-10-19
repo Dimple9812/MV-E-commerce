@@ -1,0 +1,39 @@
+# chat-service capacity runs (load-tests/k6/chat.js MODE=capacity), 2026-10-19. Heap read from /actuator/prometheus after a forced full GC (jcmd GC.run).
+# 1000-4000: -Xmx384m. 6000-9000: -Xmx1g. 4000 ended with OutOfMemoryError; 9000 stalled at the Tomcat max-connections limit (8192) and was stopped.
+### 1000 sessions
+instance 1: baseline_heap_after_gc_MB 59.8 rss_MB 457
+HELD sessions=1000.0 heap_after_gc_MB=152.2 rss_MB=489
+stomp_connected
+stomp_connect_ms...............: avg=688.63ms min=48ms     med=720.5ms p(90)=1.02s    p(95)=1.15s    p(99)=1.34s    max=1.45s   
+stomp_connected................: 100.00% 1000 out of 1000
+stomp_held_to_end..............: 100.00% 1000 out of 1000
+### 2500 sessions
+instance 1: baseline_heap_after_gc_MB 60.3 rss_MB 477
+HELD sessions=2500.0 heap_after_gc_MB=293.9 rss_MB=669
+stomp_connected
+stomp_connect_ms...............: avg=2.5s  min=19ms     med=2.83s p(90)=3.54s p(95)=3.65s p(99)=3.89s max=4.4s 
+stomp_connected................: 100.00% 2500 out of 2500
+stomp_held_to_end..............: 100.00% 2500 out of 2500
+### 4000 sessions
+instance 1: baseline_heap_after_gc_MB 60.8 rss_MB 482
+stomp_connected
+stomp_connect_ms...............: avg=2.71s  min=51ms    med=2.61s  p(90)=4.64s  p(95)=5.5s   p(99)=7.27s  max=8.53s 
+stomp_connected................: 54.41% 1807 out of 3321
+stomp_held_to_end..............: 0.00%  0 out of 4000
+time="2026-10-19T09:31:08Z" level=error msg="thresholds on metrics 'stomp_connected' have been crossed"
+### 6000 sessions
+instance 1: baseline_heap_after_gc_MB 44.5 rss_MB 364
+HELD sessions=6000.0 heap_after_gc_MB=626.4 rss_MB=1211
+stomp_connected
+stomp_connect_ms...............: avg=10.06s min=2.91s    med=10.72s p(90)=11.86s p(95)=12s   p(99)=12.37s max=12.71s
+stomp_connected................: 100.00% 6000 out of 6000
+stomp_held_to_end..............: 100.00% 6000 out of 6000
+### 8000 sessions
+instance 1: baseline_heap_after_gc_MB 58.0 rss_MB 455
+HELD sessions=8000.0 heap_after_gc_MB=810.3 rss_MB=1325
+stomp_connected
+stomp_connect_ms...............: avg=8.32s min=115ms    med=9.07s p(90)=10.42s p(95)=10.64s p(99)=11.17s max=11.64s
+stomp_connected................: 100.00% 8000 out of 8000
+stomp_held_to_end..............: 100.00% 8000 out of 8000
+### 9000 sessions
+instance 1: baseline_heap_after_gc_MB 64.1 rss_MB 492

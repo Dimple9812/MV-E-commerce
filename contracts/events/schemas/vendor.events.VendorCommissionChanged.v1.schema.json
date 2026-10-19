@@ -80,7 +80,8 @@
     "inventory-service",
     "order-service",
     "notification-service",
-    "analytics-service"
+    "analytics-service",
+    "chat-service"
   ],
   "x-key": "vendorId"
 }

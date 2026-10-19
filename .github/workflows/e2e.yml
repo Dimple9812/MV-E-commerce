@@ -31,6 +31,9 @@ jobs:
       - name: API end-to-end checks
         run: |
           node scripts/e2e-checkout.mjs
+      - name: Chat end-to-end checks (REST through the gateway, STOMP through nginx -> gateway -> chat-service)
+        run: |
+          MF_WS=ws://127.0.0.1:3000/ws/chat node scripts/e2e-chat.mjs
       - name: Browser end-to-end tests
         working-directory: frontend
         run: |

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketflow.dev/contracts/events/schemas/chat.events.ChatMessageSent.v1.schema.json",
+  "title": "ChatMessageSent v1",
+  "description": "A buyer or a shop wrote in a conversation; the other side should be notified.",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "eventType": {
+      "const": "ChatMessageSent"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "buyerId",
+        "conversationId",
+        "messageId",
+        "messageType",
+        "recipientSide",
+        "recipientUserIds",
+        "senderName",
+        "senderRole",
+        "sentAt",
+        "vendorId"
+      ],
+      "properties": {
+        "conversationId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "messageId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "vendorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "buyerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "senderRole": {
+          "type": "string",
+          "examples": [
+            "BUYER",
+            "VENDOR"
+          ],
+          "description": "open enumeration: known values BUYER, VENDOR"
+        },
+        "senderName": {
+          "type": "string"
+        },
+        "recipientUserIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "recipientSide": {
+          "type": "string",
+          "examples": [
+            "BUYER",
+            "VENDOR"
+          ],
+          "description": "open enumeration: known values BUYER, VENDOR"
+        },
+        "messageType": {
+          "type": "string",
+          "examples": [
+            "TEXT",
+            "IMAGE",
+            "PRODUCT_CARD",
+            "ORDER_CARD"
+          ],
+          "description": "open enumeration: known values TEXT, IMAGE, PRODUCT_CARD, ORDER_CARD"
+        },
+        "sentAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "productId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suborderId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Never contains the message text. recipientUserIds excludes people who muted the conversation."
+    }
+  },
+  "x-topic": "chat.events",
+  "x-producer": "chat-service",
+  "x-consumers": [
+    "notification-service"
+  ],
+  "x-key": "conversationId"
+}

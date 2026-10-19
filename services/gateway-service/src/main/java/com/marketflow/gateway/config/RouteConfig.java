@@ -89,6 +89,18 @@ public class RouteConfig {
                                 "/api/v1/admin/notifications/**")
                         .filters(f -> common(f, "notification", principalOrIpKeyResolver, defaultRateLimiter()))
                         .uri(props.uri("notification")))
+                // ---- chat: REST (attachments up to 5 MB) and the STOMP WebSocket ----
+                .route("chat", r -> r.path("/api/v1/chat/**", "/api/v1/vendor/chat/**", "/api/v1/admin/chat/**")
+                        .filters(f -> common(f, "chat", principalOrIpKeyResolver, defaultRateLimiter(),
+                                props.chatMaxRequestSize()))
+                        .uri(props.uri("chat")))
+                // A WebSocket is one long-lived exchange: no circuit breaker (its time limiter would cut it after
+                // 15 s), no retry, no body-size filter. The handshake is rate limited per IP; frames are
+                // authenticated and rate limited by chat-service itself.
+                .route("chat-ws", r -> r.path("/ws/chat", "/ws/chat/**")
+                        .filters(f -> f.requestRateLimiter(c -> c.setRateLimiter(defaultRateLimiter())
+                                .setKeyResolver(principalOrIpKeyResolver).setDenyEmptyKey(false)))
+                        .uri(props.websocketUri("chat")))
                 // ---- analytics / audit ----
                 .route("analytics", r -> r.path("/api/v1/admin/analytics/**", "/api/v1/vendor/analytics/**",
                                 "/api/v1/admin/audit/**", "/api/v1/admin/audit")
@@ -98,7 +110,12 @@ public class RouteConfig {
     }
 
     private UriSpec common(GatewayFilterSpec f, String service, KeyResolver keys, RedisRateLimiter limiter) {
-        return f.setRequestSize(props.maxRequestSize())
+        return common(f, service, keys, limiter, props.maxRequestSize());
+    }
+
+    private UriSpec common(GatewayFilterSpec f, String service, KeyResolver keys, RedisRateLimiter limiter,
+                           org.springframework.util.unit.DataSize maxRequestSize) {
+        return f.setRequestSize(maxRequestSize)
                 .requestRateLimiter(c -> c.setRateLimiter(limiter).setKeyResolver(keys)
                         .setDenyEmptyKey(false))
                 .circuitBreaker(c -> c.setName(service).setFallbackUri("forward:/__fallback/" + service)

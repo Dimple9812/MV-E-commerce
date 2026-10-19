@@ -209,6 +209,28 @@ These are a baseline on constrained hardware, not production capacity figures.
 - Microservices cost: eventual consistency to explain to users ("figures can trail"), ten deployables,
   distributed debugging, and duplicate/ordering handling everywhere.
 
+### Real-time buyer-seller chat (chat-service)
+
+Code: `services/chat-service`, `frontend/src/features/chat`, ADR 0011, measurements in `load-tests/README.md#chat`.
+
+- **Path of one message**: STOMP SEND over the buyer's WebSocket → `JwtChannelInterceptor` already authenticated
+  the session at CONNECT → access check, Redis rate limit, contact filter → one transaction: insert message
+  (unique on sender + `clientMessageId`), update the conversation, outbox `ChatMessageSent` → after commit, publish
+  to Redis `chat:fanout` → every instance delivers to its locally connected recipients.
+- **Why Redis pub/sub and not a broker relay or Kafka**: Redis was already there; durability comes from
+  PostgreSQL, so the live channel can be fire-and-forget. Kafka would need a consumer group per instance and is
+  tuned for throughput, not tens of milliseconds.
+- **What if an instance dies or pub/sub drops a message**: the message is committed; the client reconnects with
+  backoff and asks `GET /messages?after=<last id>`. Users on other instances are unaffected (seen in the load
+  test when one instance ran out of memory).
+- **Idempotency end to end**: the browser creates `clientMessageId` once per message and reuses it on retry, over
+  the socket or the HTTP fallback; the unique constraint answers a retry with the original message.
+- **Measured**: 2 vCPU VM, two instances, buyer and shop on different instances: 0 of 50,066 messages lost; at
+  200 concurrent conversations (about 98 messages/s) delivery p95 44-225 ms over three runs, at 100 conversations
+  p95 45 ms. One instance held 2,500 idle sessions with a 384 MB heap and 8,000 with 1 GB; about 95 KB per
+  session, almost all Tomcat's WebSocket buffers (class histogram), and Tomcat's `max-connections` (8,192) is the
+  hard ceiling.
+
 ## 5. Common questions and answers
 
 **Is this exactly-once?** No. Kafka delivers at least once; the system gets effectively-once *effects* by making
@@ -270,3 +292,12 @@ TypeScript, Docker, Kubernetes/Helm, GitHub Actions)
 
 Only use the last bullet's numbers together with their context ("local 2-vCPU benchmark"); do not present
 them as production results.
+
+Chat feature (add to the above):
+
+- Built real-time buyer-seller chat as a new Spring Boot service: STOMP over WebSocket through the API gateway
+  with JWT verified on CONNECT, Redis pub/sub fan-out so any of several instances can serve any user, idempotent
+  sends, per-user rate limiting, an off-platform contact filter, and order status updates posted from Kafka events.
+- Load-tested with k6 over real WebSocket sessions on a 2-vCPU VM: 0 of 50,066 messages lost across two
+  instances, p95 delivery 45 ms at 100 concurrent conversations; sized capacity at 8,000 sessions per instance
+  (1 GB heap) after a heap histogram showed per-connection memory was the servlet container's WebSocket buffers.

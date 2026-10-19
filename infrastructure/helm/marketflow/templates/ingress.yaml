@@ -31,3 +31,33 @@ spec:
             backend:
               service: { name: frontend, port: { name: http } }
 {{- end }}
+{{- if and .Values.ingress.enabled .Values.ingress.websocket.enabled }}
+---
+# Chat WebSockets (STOMP) through the gateway. ingress-nginx forwards the Upgrade handshake by itself; the longer
+# timeouts keep idle-but-heartbeating connections open (STOMP heartbeats every 10 s).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: marketflow-websocket
+  labels:
+    {{- include "marketflow.labels" . | nindent 4 }}
+  {{- with (merge (dict) .Values.ingress.annotations .Values.ingress.websocket.annotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts: [{{ .Values.ingress.host | quote }}]
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service: { name: gateway-service, port: { name: http } }
+{{- end }}

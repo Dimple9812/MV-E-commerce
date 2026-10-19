@@ -384,3 +384,127 @@ export interface AuditEntry {
   correlation_id?: string | null;
   occurred_at: string;
 }
+
+// ---------- chat ----------
+
+export type ChatSide = 'BUYER' | 'VENDOR';
+export type ChatMessageType = 'TEXT' | 'IMAGE' | 'PRODUCT_CARD' | 'ORDER_CARD' | 'SYSTEM';
+
+export interface ChatMessage {
+  id: number;
+  conversationId: string;
+  senderId?: string | null;
+  senderRole: ChatSide | 'SYSTEM';
+  type: ChatMessageType;
+  body?: string | null;
+  attachmentUrl?: string | null;
+  /** card snapshot (PRODUCT_CARD, ORDER_CARD), attachment info (IMAGE) or the order event (SYSTEM) */
+  metadata?: Record<string, unknown> | null;
+  clientMessageId?: string | null;
+  createdAt: string;
+  editedAt?: string | null;
+  deleted: boolean;
+}
+
+export interface ChatCounterpart {
+  kind: 'SHOP' | 'BUYER';
+  name: string;
+  vendorId?: string | null;
+  vendorSlug?: string | null;
+  userIds: string[];
+  online: boolean;
+  lastSeenAt?: string | null;
+  typicalReplySeconds?: number | null;
+}
+
+export interface ChatContext {
+  kind: 'PRODUCT' | 'ORDER' | 'GENERAL';
+  productId?: string | null;
+  productName?: string | null;
+  productImageUrl?: string | null;
+  price?: Money | null;
+  currency?: string | null;
+  orderId?: string | null;
+  suborderId?: string | null;
+  orderStatus?: string | null;
+  itemsSummary?: string | null;
+  orderTotal?: Money | null;
+}
+
+export interface Conversation {
+  id: string;
+  /** the viewer's side; null for an administrator */
+  side: ChatSide | null;
+  status: 'OPEN' | 'ARCHIVED' | 'BLOCKED';
+  buyerId: string;
+  buyerName: string;
+  vendorId: string;
+  vendorName: string;
+  context: ChatContext;
+  counterpart: ChatCounterpart;
+  myLastReadMessageId: number;
+  theirLastReadMessageId: number;
+  muted: boolean;
+  canWrite: boolean;
+  createdAt: string;
+  lastMessageAt: string;
+}
+
+export interface ConversationSummary {
+  id: string;
+  status: Conversation['status'];
+  counterpart: ChatCounterpart;
+  context: ChatContext;
+  lastMessage?: { id: number; type: ChatMessageType; text: string; senderRole: string; deleted: boolean } | null;
+  unread: number;
+  muted: boolean;
+  lastMessageAt: string;
+}
+
+export interface CursorPage<T> {
+  items: T[];
+  nextCursor?: string | null;
+}
+
+export interface MessagePage {
+  items: ChatMessage[];
+  hasMore: boolean;
+  changed?: ChatMessage[];
+}
+
+export interface UnreadCounts {
+  asBuyer: number;
+  asVendor: number;
+}
+
+export interface QuickReply {
+  id: string;
+  title: string;
+  body: string;
+  sortOrder: number;
+}
+
+export interface ChatReport {
+  id: string;
+  conversationId: string;
+  reporterId: string;
+  reporterSide: ChatSide;
+  reason: 'SPAM' | 'SCAM' | 'ABUSE' | 'OFF_PLATFORM_PAYMENT' | 'OTHER';
+  details?: string | null;
+  status: 'OPEN' | 'RESOLVED';
+  resolution?: 'DISMISSED' | 'CONVERSATION_BLOCKED' | null;
+  resolutionNote?: string | null;
+  resolvedAt?: string | null;
+  createdAt: string;
+  vendorName: string;
+  buyerName: string;
+  violations: number;
+}
+
+/** Events pushed over the chat connection (STOMP user queues, or BroadcastChannel in the demo). */
+export type ChatEvent =
+  | { queue: 'messages'; payload: { kind: 'MESSAGE_CREATED' | 'MESSAGE_UPDATED' | 'CONVERSATION_UPDATED'; conversationId: string; message?: ChatMessage; conversationStatus?: string } }
+  | { queue: 'typing'; payload: { conversationId: string; side: ChatSide; name: string; typing: boolean } }
+  | { queue: 'receipts'; payload: { conversationId: string; side: ChatSide; lastReadMessageId: number } }
+  | { queue: 'presence'; payload: { userId: string; online: boolean; lastSeenAt?: string | null } }
+  | { queue: 'errors'; payload: { code: string; message: string; conversationId?: string | null; clientMessageId?: string | null } };

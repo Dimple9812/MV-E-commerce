@@ -2,10 +2,10 @@
 SHELL := /bin/bash
 MVN ?= mvn
 SERVICES := gateway-service identity-service vendor-service catalog-service inventory-service order-service \
-            payment-service notification-service review-service analytics-service
+            payment-service notification-service review-service analytics-service chat-service
 
 .PHONY: help env up down reset logs ps seed e2e build test test-unit test-it frontend-check frontend-e2e \
-        images dashboards load-smoke load-checkout clean
+        images dashboards load-smoke load-checkout load-chat clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -31,8 +31,9 @@ ps: ## Show container status and health
 seed: ## Create demo sellers, products and customers through the public API
 	node scripts/seed-demo.mjs
 
-e2e: ## API end-to-end checks against the running stack (after make seed)
+e2e: ## API end-to-end checks against the running stack, chat included (after make seed)
 	node scripts/e2e-checkout.mjs
+	MF_WS=ws://127.0.0.1:$${FRONTEND_HOST_PORT:-3000}/ws/chat node scripts/e2e-chat.mjs
 
 build: ## Compile and package every backend module (no tests)
 	$(MVN) -B -DskipTests clean package
@@ -62,6 +63,9 @@ load-smoke: ## Short k6 smoke test of the read path
 
 load-checkout: ## k6 checkout load test (creates real orders in the target stack)
 	k6 run load-tests/k6/checkout.js
+
+load-chat: ## k6 chat load test over WebSockets (run load-tests/prepare-chat.mjs first; PAIRS=100)
+	k6 run -e PAIRS=$${PAIRS:-100} -e DURATION=2m load-tests/k6/chat.js
 
 clean: ## Remove build output
 	$(MVN) -q clean; rm -rf frontend/dist

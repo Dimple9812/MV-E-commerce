@@ -16,11 +16,28 @@ public record GatewayProperties(
         Map<String, String> services,
         List<String> allowedOrigins,
         DataSize maxRequestSize,
+        DataSize chatMaxRequestSize,
         Duration downstreamTimeout,
         RateLimit defaultRateLimit,
         RateLimit authRateLimit) {
 
     public record RateLimit(int replenishRate, int burstCapacity) {
+    }
+
+    public DataSize chatMaxRequestSize() {
+        return chatMaxRequestSize == null ? DataSize.ofMegabytes(6) : chatMaxRequestSize;
+    }
+
+    /** The service's base URI with the WebSocket scheme (http → ws, https → wss) for upgrade routing. */
+    public String websocketUri(String service) {
+        String uri = uri(service);
+        if (uri.startsWith("https://")) {
+            return "wss://" + uri.substring("https://".length());
+        }
+        if (uri.startsWith("http://")) {
+            return "ws://" + uri.substring("http://".length());
+        }
+        return uri;
     }
 
     public String uri(String service) {

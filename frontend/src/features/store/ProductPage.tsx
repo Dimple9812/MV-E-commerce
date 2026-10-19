@@ -12,6 +12,7 @@ import { ErrorState, Field, InlineError, Input, PageSpinner, PriceTag, ProductAr
 import { http } from '@/lib/api';
 import { date, money } from '@/lib/format';
 import { useProduct, useRating, useReviews } from './catalog';
+import { MessageSellerButton } from '@/features/chat';
 
 export function ProductPage() {
   const { id } = useParams();
@@ -103,6 +104,13 @@ export function ProductPage() {
             </div>
             <button className="btn-accent flex-1 py-3 text-base" disabled={soldOut} onClick={addToCart}>Add to cart</button>
           </div>
+
+          {p.vendor && (
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate">
+              <MessageSellerButton vendorId={p.vendor.id} productId={p.id} attachLabel={p.name} label={`Ask ${p.vendor.name}`} />
+              <span>Questions about sizes, stock or shipping? The seller answers here.</span>
+            </div>
+          )}
 
           <p className="flex items-start gap-2 text-sm text-slate">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />

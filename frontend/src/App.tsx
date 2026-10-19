@@ -1,6 +1,6 @@
-import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
-import { Link, Route, Routes } from 'react-router-dom';
-import { BarChart3, Boxes, ClipboardList, FolderTree, LayoutDashboard, MessageSquare, Package, ScrollText, ShieldAlert, Store, Truck, Users, Wallet, CreditCard } from 'lucide-react';
+import { lazy, Suspense, useEffect, type ComponentType, type ReactNode } from 'react';
+import { Link, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
+import { BarChart3, Boxes, ClipboardList, FolderTree, Flag, LayoutDashboard, MessageCircle, MessageSquare, Package, ScrollText, ShieldAlert, Store, Truck, Users, Wallet, CreditCard } from 'lucide-react';
 import { RequireRole } from '@/auth/RequireRole';
 import { DashboardLayout, StoreLayout, type NavItem } from '@/components/layout';
 import { EmptyState, PageSpinner } from '@/components/ui';
@@ -14,6 +14,8 @@ import { CheckoutPage } from '@/features/customer/CheckoutPage';
 import { OrderDetailPage, OrdersPage } from '@/features/customer/OrderPages';
 import { AccountLayout, AddressesPage, NotificationsPage, ProfilePage } from '@/features/customer/AccountPages';
 import { SellPage } from '@/features/vendor/SellPage';
+import { BuyerMessagesPage } from '@/features/chat/MessagesPage';
+import { useUnreadChats } from '@/features/chat';
 
 // Seller and admin screens are split into their own chunks: shoppers never download them.
 const named = <M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M) =>
@@ -24,6 +26,8 @@ const vendorOps = () => import('@/features/vendor/VendorOps');
 const adminInsights = () => import('@/features/admin/AdminInsights');
 const adminManage = () => import('@/features/admin/AdminManage');
 const adminOrders = () => import('@/features/admin/AdminOrders');
+const vendorChat = () => import('@/features/chat/VendorMessagesPage');
+const adminChat = () => import('@/features/chat/AdminChatPage');
 
 const VendorDashboard = named(vendorDash, 'VendorDashboard');
 const VendorProducts = named(vendorProducts, 'VendorProducts');
@@ -44,11 +48,20 @@ const AdminReviewsPage = named(adminManage, 'AdminReviewsPage');
 const AdminOrdersPage = named(adminOrders, 'AdminOrdersPage');
 const AdminOrderDetailPage = named(adminOrders, 'AdminOrderDetailPage');
 const AdminPaymentsPage = named(adminOrders, 'AdminPaymentsPage');
+const VendorMessagesPage = named(vendorChat, 'VendorMessagesPage');
+const AdminChatReportsPage = named(adminChat, 'AdminChatReportsPage');
 
 const icon = (C: typeof Store) => <C className="h-4 w-4" aria-hidden />;
 
+function ShopUnreadBadge() {
+  const unread = useUnreadChats().data?.asVendor ?? 0;
+  if (!unread) return null;
+  return <span className="ml-auto min-w-5 rounded-full bg-brick px-1.5 text-center text-[11px] font-bold leading-5 text-white">{unread > 99 ? '99+' : unread}<span className="sr-only"> unread</span></span>;
+}
+
 const vendorNav: NavItem[] = [
   { to: '/vendor', label: 'Overview', icon: icon(LayoutDashboard), end: true },
+  { to: '/vendor/messages', label: 'Messages', icon: icon(MessageCircle), badge: <ShopUnreadBadge /> },
   { to: '/vendor/products', label: 'Products', icon: icon(Package) },
   { to: '/vendor/inventory', label: 'Inventory', icon: icon(Boxes) },
   { to: '/vendor/orders', label: 'Orders', icon: icon(Truck) },
@@ -65,6 +78,7 @@ const adminNav: NavItem[] = [
   { to: '/admin/orders', label: 'Orders', icon: icon(ClipboardList) },
   { to: '/admin/payments', label: 'Payments', icon: icon(CreditCard) },
   { to: '/admin/reviews', label: 'Reviews', icon: icon(MessageSquare) },
+  { to: '/admin/chat', label: 'Chat reports', icon: icon(Flag) },
   { to: '/admin/operations', label: 'Operations', icon: icon(ShieldAlert) },
   { to: '/admin/audit', label: 'Audit log', icon: icon(ScrollText) },
 ];
@@ -75,8 +89,20 @@ function NotFound() {
   return <EmptyState title="This page does not exist" action={<Link to="/" className="btn-primary">Back to the store</Link>}>The link may be old, or the item was removed.</EmptyState>;
 }
 
+/** A new page starts at the top (e.g. "Ask the shop" from far down a product page); back and forward keep theirs. */
+function ScrollToTopOnNavigate() {
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    if (navigationType !== 'POP') window.scrollTo(0, 0);
+  }, [pathname, navigationType]);
+  return null;
+}
+
 export function App() {
   return (
+    <>
+    <ScrollToTopOnNavigate />
     <Routes>
       <Route element={<StoreLayout />}>
         <Route index element={<HomePage />} />
@@ -96,6 +122,8 @@ export function App() {
           <Route path="orders/:id" element={<OrderDetailPage />} />
           <Route path="addresses" element={<AddressesPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="messages" element={<BuyerMessagesPage />} />
+          <Route path="messages/:id" element={<BuyerMessagesPage />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
@@ -109,6 +137,8 @@ export function App() {
         <Route path="orders" element={lazyPage(<VendorSuborders />)} />
         <Route path="earnings" element={lazyPage(<VendorEarnings />)} />
         <Route path="profile" element={lazyPage(<VendorProfile />)} />
+        <Route path="messages" element={lazyPage(<VendorMessagesPage />)} />
+        <Route path="messages/:id" element={lazyPage(<VendorMessagesPage />)} />
         <Route path="*" element={<NotFound />} />
       </Route>
 
@@ -122,11 +152,12 @@ export function App() {
         <Route path="orders/:orderId" element={lazyPage(<AdminOrderDetailPage />)} />
         <Route path="payments" element={lazyPage(<AdminPaymentsPage />)} />
         <Route path="reviews" element={lazyPage(<AdminReviewsPage />)} />
+        <Route path="chat" element={lazyPage(<AdminChatReportsPage />)} />
         <Route path="operations" element={lazyPage(<AdminOperationsPage />)} />
         <Route path="audit" element={lazyPage(<AdminAuditPage />)} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </>
   );
 }
-

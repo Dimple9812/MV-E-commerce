@@ -1,0 +1,29 @@
+{
+  "topic": "chat.events",
+  "key": "fbf3b79c-d66b-486c-84ce-25f1531e3a8d",
+  "value": {
+    "eventId": "191f43f9-916c-4340-badb-225a518a701d",
+    "payload": {
+      "sentAt": "2026-10-18T19:43:43.624762Z",
+      "buyerId": "6d9f56eb-1f91-49ed-aa84-290fc94e6eac",
+      "vendorId": "2a8b6e4a-f880-48dc-a09a-5dd2c67fe5be",
+      "messageId": 43,
+      "productId": "c5c548fb-d959-4c9c-a5b7-07a108e01e91",
+      "senderName": "Customer",
+      "senderRole": "BUYER",
+      "messageType": "TEXT",
+      "recipientSide": "VENDOR",
+      "conversationId": "fbf3b79c-d66b-486c-84ce-25f1531e3a8d",
+      "recipientUserIds": [
+        "8ff13ad1-f57c-432a-8dae-d4f5958011a3"
+      ]
+    },
+    "producer": "chat-service",
+    "eventType": "ChatMessageSent",
+    "occurredAt": "2026-10-18T19:43:43.630458578Z",
+    "aggregateId": "fbf3b79c-d66b-486c-84ce-25f1531e3a8d",
+    "aggregateType": "Conversation",
+    "correlationId": "b98e5b33-b4ad-4787-baf9-f5ef2c0debf7",
+    "schemaVersion": 1
+  }
+}

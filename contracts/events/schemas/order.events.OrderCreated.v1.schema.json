@@ -223,7 +223,8 @@
     "vendor-service",
     "notification-service",
     "analytics-service",
-    "review-service"
+    "review-service",
+    "chat-service"
   ],
   "x-key": "orderId"
 }

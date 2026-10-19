@@ -21,6 +21,7 @@ export function AccountLayout() {
         <NavLink to="/account" end className={link}>Profile</NavLink>
         <NavLink to="/account/orders" className={link}>Orders</NavLink>
         <NavLink to="/account/addresses" className={link}>Addresses</NavLink>
+        <NavLink to="/account/messages" className={link}>Messages</NavLink>
         <NavLink to="/account/notifications" className={link}>Notifications</NavLink>
       </nav>
       <div className="min-w-0"><Outlet /></div>

@@ -19,6 +19,7 @@ scrape_configs:
           - notification-service:8087
           - review-service:8088
           - analytics-service:8089
+          - chat-service:8091
   - job_name: marketflow-gateway
     metrics_path: /actuator/prometheus
     static_configs:

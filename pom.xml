@@ -31,6 +31,7 @@
     <module>services/notification-service</module>
     <module>services/review-service</module>
     <module>services/analytics-service</module>
+    <module>services/chat-service</module>
   </modules>
 
   <properties>
