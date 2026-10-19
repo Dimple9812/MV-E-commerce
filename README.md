@@ -505,6 +505,7 @@ mvn verify                    # unit + integration tests; Testcontainers starts 
 cd frontend && npm test       # Vitest + Testing Library
 cd frontend && npx playwright test        # browser tests against a running, seeded stack (E2E_ADMIN_PASSWORD optional)
 node scripts/e2e-checkout.mjs             # API end-to-end checks against a running, seeded stack
+node scripts/e2e-chat.mjs                 # chat end-to-end: REST + STOMP over WebSocket (MF_WS=ws://127.0.0.1:3000/ws/chat via nginx)
 python3 scripts/validate-contracts.py     # event examples against the JSON schemas
 ```
 

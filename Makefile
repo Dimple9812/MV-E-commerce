@@ -31,8 +31,9 @@ ps: ## Show container status and health
 seed: ## Create demo sellers, products and customers through the public API
 	node scripts/seed-demo.mjs
 
-e2e: ## API end-to-end checks against the running stack (after make seed)
+e2e: ## API end-to-end checks against the running stack, chat included (after make seed)
 	node scripts/e2e-checkout.mjs
+	MF_WS=ws://127.0.0.1:$${FRONTEND_HOST_PORT:-3000}/ws/chat node scripts/e2e-chat.mjs
 
 build: ## Compile and package every backend module (no tests)
 	$(MVN) -B -DskipTests clean package

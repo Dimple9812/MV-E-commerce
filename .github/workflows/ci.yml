@@ -151,7 +151,8 @@ jobs:
         working-directory: frontend
         run: npm audit --omit=dev --audit-level=high
       - name: Trivy filesystem scan (dependencies, secrets, IaC misconfiguration)
-        uses: aquasecurity/trivy-action@0.28.0
+        # pinned by commit: the action's old unprefixed tags (e.g. 0.28.0) no longer exist upstream
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
           scanners: vuln,secret,misconfig
