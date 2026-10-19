@@ -53,8 +53,18 @@ processes and Kafka 3.9.1 (KRaft) was started from its Maven Central jars.
 | Mermaid diagrams | rendered with Mermaid 11.4 in headless Chromium | README 14/14, data model 10/10 |
 | Chat load and capacity | k6 over real STOMP sessions, two chat-service instances | see [load-tests/README.md](../load-tests/README.md#chat): 0 of 50,066 messages lost; 2,500 sessions per instance at 384 MB heap, 8,000 at 1 GB |
 
-Not run in this session: the Compose stack and Docker images (no Docker daemon), `helm lint` and the GitHub
-workflows (including the new `demo-e2e` job), and the full-stack Playwright suite against real services.
+On GitHub Actions (same day, branch `feature/chat-service`):
+
+- **End-to-end workflow** (`e2e.yml`, run 39241831153): `docker compose up --build --wait` built every image,
+  chat-service included, and brought the whole stack up healthy; then `seed-demo.mjs`, the 12 API checks,
+  **`e2e-chat.mjs` 9/9 with STOMP through nginx → gateway → chat-service**, and the full-stack Playwright suite
+  all passed.
+- **CI**: backend (Testcontainers), frontend, `demo-e2e` (two-tab chat), Helm lint + kubeconform, Compose config,
+  event contracts and CodeQL passed. The security job stops at "Dependency review", which needs the repository's
+  Dependency graph enabled (Settings → Code security); until then the image-publish job is skipped (the images
+  themselves are built by the end-to-end workflow above).
+
+`e2e-chat.mjs` also passed 9/9 locally against all eleven services run as JVMs.
 
 Found and fixed while verifying chat: `CatalogApiIT` replaced the per-test PostgreSQL initializer with its own
 `@ContextConfiguration`, so it only passed where a real `catalog_db` existed (it would fail on Testcontainers in

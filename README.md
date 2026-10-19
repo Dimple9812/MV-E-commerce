@@ -21,7 +21,8 @@ The demo does not run the Java services: see [Demo mode](#demo-mode) for what it
 > but **not built, deployed or run** in that environment (no container registry access). Buyer-seller chat was
 > verified on 2026-10-19: 213 backend tests (116 unit, 97 integration, including two chat-service instances
 > exchanging messages through Redis), 54 frontend unit tests, 8 Playwright journeys on the demo build (two-tab live
-> chat among them) and k6 WebSocket load and capacity tests; Compose, Helm and the workflows were not run for it.
+> chat among them), k6 WebSocket load and capacity tests, and on GitHub Actions the Docker Compose stack built and
+> started from scratch with the API, chat (STOMP through nginx) and browser end-to-end suites passing.
 > Exactly what was verified, and how: [docs/implementation-status.md](docs/implementation-status.md).
 
 ## Contents
