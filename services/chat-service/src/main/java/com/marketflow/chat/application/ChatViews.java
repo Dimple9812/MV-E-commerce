@@ -149,8 +149,9 @@ public class ChatViews {
         String text = switch (MessageType.valueOf(type)) {
             case TEXT, SYSTEM -> body;
             case IMAGE -> body == null || body.isBlank() ? "Photo" : "Photo: " + body;
-            case PRODUCT_CARD -> "Shared a product";
-            case ORDER_CARD -> "Shared an order";
+            // a card sent with a question previews the question: that is what the other side needs to see
+            case PRODUCT_CARD -> body == null || body.isBlank() ? "Shared a product" : body;
+            case ORDER_CARD -> body == null || body.isBlank() ? "Shared an order" : body;
         };
         if (text == null) {
             return "";
