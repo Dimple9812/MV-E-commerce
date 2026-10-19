@@ -11,7 +11,11 @@
 | 429 Too Many Requests | gateway rate limit (20 req/s per user or IP) | expected; for load tests raise `RATE_LIMIT_RPS` / `RATE_LIMIT_BURST` |
 | no e-mails | they go to Mailpit | open http://localhost:8025 |
 | Grafana panels empty | Prometheus has no samples yet | wait one scrape (15 s); check http://localhost:9090/targets |
-| containers killed with exit code 137 | Docker Desktop memory limit | give Docker at least 8 GB; the stack runs 18 containers |
+| containers killed with exit code 137 | Docker Desktop memory limit | give Docker at least 8 GB; the stack runs 19 containers |
+| `add CHAT_DB_PASSWORD to .env` after pulling the chat feature | `.env` predates chat-service | add `CHAT_DB_PASSWORD=<random>` to `.env`; postgres creates `chat_db` on the existing volume at its next start (`infrastructure/postgres/ensure-service-database.sh`), no reset needed |
+| chat shows "Reconnecting…" and never connects | the WebSocket upgrade is not passed through, or chat-service is down | `docker compose ps chat-service`; behind your own proxy forward `Upgrade`/`Connection` for `/ws/` and allow reads longer than 10 s (heartbeats) |
+| a message shows "Not sent: contact details…" | chat-service refuses phone numbers, e-mail addresses and payment links | by design (keeps sales on the platform); rephrase without them |
+| live chat works on one tab but a second instance's users get nothing | Redis unreachable from chat-service (fan-out between instances) | check `chat_fanout_failed_total` on `/actuator/prometheus`; local users are still served, others resync on reconnect |
 
 **When to delete volumes**: only when you want a clean database (`docker compose down -v`). Plain
 `docker compose down` keeps orders, users and Kafka history. Deleting only `kafka-data` while keeping

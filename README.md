@@ -7,6 +7,8 @@ Independent sellers list products; customers buy from several sellers in one che
 their own part of the order. The interesting part is underneath: checkout is a persisted, orchestrated saga
 across order, inventory and payment services, every event goes through a transactional outbox, every consumer
 is idempotent, stock cannot be oversold, and an unknown payment outcome is reconciled instead of guessed.
+Buyers and sellers talk in real-time chat (STOMP over WebSocket, scaled across instances with Redis), with order
+updates posted into the conversation from Kafka events.
 
 **Live demo: https://marketflow-demo.vercel.app** (the React storefront, seller hub and admin console with an
 in-browser stand-in for the backend and sample data; use the banner to try it as a customer, seller or admin).
@@ -78,11 +80,23 @@ MarketFlow addresses each one explicitly:
 - Orders to fulfil (own suborders only), shipping with tracking, delivery; earnings ledger, commission, payouts;
   sales dashboard.
 
+**Buyer-seller chat** ([ADR 0011](docs/adr/0011-buyer-seller-chat.md))
+- "Ask the shop" on product, shop and order pages; one conversation per buyer, shop and product or suborder,
+  with the product or order attached as a card. Buyer inbox under Account, shop inbox in the seller hub, unread
+  badges in the header and seller navigation.
+- Live delivery, typing indicator, sent/seen ticks, online status and "usually replies within …", image messages,
+  edit/delete within 10 minutes, mute, infinite scroll, optimistic sending with retry, automatic reconnection with
+  backoff and resynchronisation of anything missed. Seller quick replies.
+- Order confirmed / shipped / delivered / cancelled appear in the order's conversation as system messages.
+- Safety: phone numbers, e-mail addresses and off-platform payment links are refused with an explanation; rate
+  limit per user; "Report conversation" for an admin review queue (admins can read, never write).
+
 **Administrators**
 - Marketplace overview (GMV, AOV, payment success, sales by seller, best sellers, low stock).
 - Seller approval/rejection/suspension and commission; user activation; product moderation; categories.
 - Orders with the full saga timeline, payments and refunds, review moderation, audit log.
 - Operations: sagas by state, dead-lettered events across all services, undelivered notifications.
+- Chat reports: read the reported conversation, resolve or block it.
 
 ## Architecture
 
@@ -98,6 +112,11 @@ flowchart LR
     gw --> ntf[notification]
     gw --> rev[review]
     gw --> ana[analytics]
+    browser -->|/ws/chat STOMP<br/>over WebSocket| gw
+    gw --> chat1[chat #1]
+    gw --> chat2[chat #2]
+    chat1 <-->|pub/sub fan-out| r[(Redis)]
+    chat2 <-->|pub/sub fan-out| r
 
     subgraph kafka[Kafka]
         t1[(domain events)]
@@ -105,10 +124,10 @@ flowchart LR
         t3[(dead-letter topics)]
     end
 
-    idn & ven & cat & inv & ord & pay & rev -- outbox --> t1
+    idn & ven & cat & inv & ord & pay & rev & chat1 -- outbox --> t1
     ord -- outbox --> t2
     t2 --> inv & pay
-    t1 --> ord & cat & inv & ven & idn & ntf & rev & ana
+    t1 --> ord & cat & inv & ven & idn & ntf & rev & ana & chat1
     t3 --> ana
 
     idn --- r[(Redis)]
@@ -133,6 +152,7 @@ keys. Data another service needs is kept as a versioned projection fed by events
 | notification-service | 8087 | E-mail and in-app notifications from domain events, retry topics, DLT | notification_db |
 | review-service | 8088 | Verified-purchase reviews, moderation, rating aggregates | review_db |
 | analytics-service | 8089 | Dashboard read models, audit log, dead-letter register | analytics_db |
+| chat-service | 8091 | Buyer-seller conversations: REST + STOMP over WebSocket, JWT on CONNECT, Redis fan-out between instances, presence, rate limit, contact filter, reports, order updates as system messages | chat_db |
 
 Data model: [docs/architecture/data-model.md](docs/architecture/data-model.md) (ER diagram per service,
 generated from the migrations). The core of order-service:
@@ -190,6 +210,9 @@ flowchart TB
     subgraph review
       RE[ProductRatingUpdated]
     end
+    subgraph chat
+      CE[ChatMessageSent / ConversationReported]
+    end
     VE --> identity & catalog & inventory & order
     PE --> inventory & order
     IC --> inventory
@@ -199,9 +222,41 @@ flowchart TB
     OE --> vendor & review & notification[notification] & analytics[analytics]
     RE --> catalog
     UR & VE & IE & PY --> notification
+    VE & PE & OE --> chat
+    CE --> notification
 ```
 
-All 56 event types, their schemas, producers, consumers, keys and compatibility rules:
+### Chat message path
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Buyer browser
+    participant GW as gateway-service
+    participant C1 as chat-service #1
+    participant PG as PostgreSQL (chat_db)
+    participant R as Redis
+    participant C2 as chat-service #2
+    participant S as Seller browser
+    B->>GW: WebSocket /ws/chat (Origin checked)
+    GW->>C1: proxied WebSocket
+    B->>C1: STOMP CONNECT Authorization: Bearer JWT
+    C1->>C1: JwtChannelInterceptor: RS256, iss, aud, exp → principal = buyer
+    Note over S,C2: the seller connected the same way, to instance #2
+    B->>C1: SEND /app/chat.send {conversationId, clientMessageId, body}
+    C1->>C1: access rules · Redis rate limit · contact filter
+    C1->>PG: one tx: INSERT message (unique sender + clientMessageId),<br/>update conversation, outbox ChatMessageSent
+    C1-->>B: /user/queue/messages (✓ sent)
+    C1->>R: after commit: PUBLISH chat:fanout {recipients, payload}
+    R-->>C2: delivery
+    C2-->>S: /user/queue/messages
+    S->>C2: SEND /app/chat.read
+    C2->>R: PUBLISH receipt
+    R-->>C1: receipt
+    C1-->>B: /user/queue/receipts (✓✓ seen)
+```
+
+All 58 event types, their schemas, producers, consumers, keys and compatibility rules:
 [contracts/events](contracts/events/README.md).
 
 ## Checkout saga
@@ -271,6 +326,12 @@ Saga state and every transition are stored in order_db, so a restart continues w
 - **Input and transport**: Bean Validation on every request, RFC 9457 problem responses without stack traces,
   request size limits, image uploads checked by magic bytes, security headers (CSP, HSTS behind TLS,
   X-Frame-Options, nosniff), CORS allow-list, rate limiting per user or IP.
+- **WebSockets (chat)**: the handshake is anonymous (browsers cannot send headers on it) but Origin-checked; the
+  access token travels in the STOMP CONNECT frame, never in the URL, and is verified like any API call. The session
+  principal is the token subject, so a sender can never be spoofed in a payload. Clients can send only to `/app/**`
+  and subscribe only to their own `/user/queue/**`; frames after token expiry are refused (`token_expired`).
+  Messages are plain text rendered as text (never HTML), rate limited per user in Redis, and checked for contact
+  details and payment links that would take a sale off-platform.
 - **Webhooks**: HMAC-SHA256 signature over timestamp and body, 5-minute tolerance, constant-time comparison,
   provider event ids stored to reject replays.
 - **Secrets**: none in the repository. Compose refuses to start without `.env`; Helm references Kubernetes
@@ -285,7 +346,8 @@ Saga state and every transition are stored in order_db, so a restart continues w
 | Area | Choice |
 |---|---|
 | Backend | Java 21, Spring Boot 3.5, Spring Security (resource server), Spring Data JPA + JdbcTemplate, Flyway, Spring Kafka, Spring Cloud Gateway 2025.0 (WebFlux), Resilience4j, springdoc-openapi |
-| Data | PostgreSQL 16 (one database per service), Redis 7 (rate limiting, login throttling, catalog cache) |
+| Real time | Spring WebSocket + STOMP (simple broker per instance), Redis pub/sub between instances, `@stomp/stompjs` in the browser |
+| Data | PostgreSQL 16 (one database per service), Redis 7 (rate limiting, login throttling, catalog cache, chat fan-out, presence) |
 | Messaging | Apache Kafka 3.9, KRaft mode, JSON envelope with versioned schemas |
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, TanStack Query, React Hook Form + Zod, Recharts, Lucide |
 | Testing | JUnit 5, AssertJ, Spring Boot Test, Testcontainers (PostgreSQL, Redis), embedded Kafka, Vitest + Testing Library, Playwright, k6 |
@@ -300,7 +362,11 @@ the browser from sample data saved in the visitor's localStorage. It follows the
 depends on them: server-side pricing with coupons, shipping and tax; one suborder per seller; the checkout saga with
 every sandbox card outcome (approved, asynchronous, timeout and reconciliation, declined, capture failure) and its
 compensations; stock reservations; cancellation with refund and restock; verified-purchase reviews; seller
-earnings; admin moderation, analytics and audit log. There is no Kafka, database or second user behind it, so it
+earnings; admin moderation, analytics and audit log; and chat with chat-service's rules (access, idempotent sends,
+rate limit, contact filter, edit window, reports), where a `BroadcastChannel` stands in for the WebSocket and the
+Redis fan-out: open the demo in two tabs, sign in as Customer in one and as Seller in the other (each tab keeps its
+own demo user), and messages, typing and read receipts travel live between them. Seeded conversations include one
+about an order with its status updates. There is no Kafka, database or second machine behind it, so it
 demonstrates the product and the frontend, not the distributed backend. The regular build contains none of this
 code (dynamic import). Playwright covers it: `E2E_DEMO=1 E2E_BASE_URL=http://localhost:4173 npx playwright test`
 against `vite preview` of a demo build.
@@ -404,8 +470,29 @@ curl -s localhost:8080/api/v1/orders/<order id> -H "Authorization: Bearer $TOKEN
 ```
 
 Main route groups: `/api/v1/auth`, `/users/me`, `/products`, `/categories`, `/vendors`, `/orders`,
-`/payments`, `/notifications`, `/products/{id}/reviews`; seller routes under `/api/v1/vendor/**`; admin routes
-under `/api/v1/admin/**`.
+`/payments`, `/notifications`, `/products/{id}/reviews`, `/chat`; seller routes under `/api/v1/vendor/**`; admin
+routes under `/api/v1/admin/**`.
+
+Chat (chat-service, Swagger UI at http://localhost:8091/swagger-ui.html):
+
+| What | Endpoint |
+|---|---|
+| Start or reopen a conversation (buyer) | `POST /api/v1/chat/conversations` `{vendorId, productId?, suborderId?}` |
+| Buyer inbox / shop inbox (cursor-paginated, unread counts, last message) | `GET /api/v1/chat/conversations?cursor=` / `GET /api/v1/vendor/chat/conversations` |
+| Unread badges (as buyer and as shop) | `GET /api/v1/chat/unread-count` |
+| Messages: older pages, or catch-up after a reconnect | `GET /api/v1/chat/conversations/{id}/messages?before=&limit=30` or `?after=` |
+| Send over HTTP (fallback; same `clientMessageId` idempotency as the socket) | `POST /api/v1/chat/conversations/{id}/messages` |
+| Mark read, mute, report | `POST .../{id}/read`, `PUT .../{id}/mute`, `POST .../{id}/report` |
+| Edit / delete own message (10 minutes, soft delete) | `PATCH` / `DELETE /api/v1/chat/messages/{messageId}` |
+| Image upload (PNG, JPEG, WebP by magic bytes, 5 MB) and download | `POST /api/v1/chat/attachments` (multipart), `GET /api/v1/chat/attachments/{id}` |
+| Shop quick replies | `GET/POST/PUT/DELETE /api/v1/vendor/chat/quick-replies` |
+| Admin: conversations (read-only) and reports | `GET /api/v1/admin/chat/conversations[/{id}[/messages]]`, `GET /api/v1/admin/chat/reports`, `POST .../reports/{id}/resolve` |
+
+Conversation endpoints serve both sides: the caller's side (buyer or shop) is worked out from the token.
+
+STOMP at `ws://<host>/ws/chat`: CONNECT with `Authorization: Bearer <access token>`; send to `/app/chat.send`,
+`/app/chat.typing`, `/app/chat.read`; subscribe to `/user/queue/messages`, `/typing`, `/receipts`, `/presence`,
+`/errors`.
 
 ## Tests
 
@@ -443,6 +530,22 @@ The 18 mandatory scenarios and the tests that cover them:
 | 16 | Multi-vendor checkout creates parent order and suborders | `CheckoutSagaIT.multiVendorCheckoutCreatesParentOrderAndOneSuborderPerVendorWithServerPrices`, `PricingCalculatorTest` |
 | 17 | A vendor sees only their own orders and earnings | `CheckoutSagaIT.vendorSeesAndShipsOnlyItsOwnSuborders`, `VendorApiIT.earningsLedgerIsBuiltOnceFromOrderEventsAndIsolatedPerVendor` |
 | 18 | No reviews without a purchase | `ReviewIT.customerWhoNeverBoughtTheProductCannotReviewIt`, `cancelledPurchaseIsNotEligible` |
+
+Chat (chat-service, frontend and demo):
+
+| Scenario | Test |
+|---|---|
+| Only the buyer and the shop take part; admins only read; strangers get 404 | `ChatAccessTest` (10 cases), `ChatApiIT.onlyTheBuyerAndTheShopTakePartAdminsOnlyRead` |
+| One conversation per buyer, shop and context, even when started concurrently | `ChatApiIT.oneConversationPerBuyerShopAndContextEvenWhenStartedConcurrently` |
+| A retried send never duplicates a message | `ChatApiIT.sendingIsIdempotentOnTheClientMessageId` |
+| Rate limit per user, typing throttle, fails open without Redis | `RateLimiterTest`, `ChatApiIT.messagesAreRateLimitedPerUser` |
+| Phone numbers, e-mail addresses (also spelled out), UPI ids and payment links are refused | `ContentPolicyTest` (parameterised), `ChatApiIT.contactDetailsAreRefusedAndCountedForAdmins` |
+| Edit/delete only own messages within 10 minutes | `MessageRulesTest`, `ChatApiIT.editAndDeleteOnlyYourOwnMessages` |
+| Order events post SYSTEM messages exactly once | `ChatApiIT.orderEventsPostSystemMessagesOnceIntoTheRelatedConversation` |
+| Messages, typing and receipts reach a user connected to **another instance** | `ChatWebSocketIT.messagesTypingAndReceiptsCrossInstances` (two chat-service instances, real Redis, two STOMP clients) |
+| No valid token, no session; no subscribing to someone else's queue | `ChatWebSocketIT.connectWithoutAValidTokenIsRefused`, `subscribingToSomeoneElsesQueueIsRefused` |
+| Chat window, inbox, reconnect banner and resync, optimistic send, HTTP fallback | `frontend/src/features/chat/chat.test.tsx` |
+| Two browser tabs (Customer, Seller) chat live in the public demo | `frontend/e2e/demo-chat.spec.ts` |
 
 ## Observability
 
@@ -518,6 +621,11 @@ and the correlation id from any error response searched in logs or Jaeger.
   for production only.
 - Docker images, the Compose stack and the Helm chart are validated but were not built or deployed in the
   verification environment.
+- Chat: a shop has exactly one seller account (vendor staff do not exist yet; the participant model is ready for
+  them). Image attachments are stored in `chat_db` (fine at this scale; object storage behind `AttachmentService`
+  is the next step). Redis pub/sub does not buffer, so a client that loses its connection relies on the
+  resynchronisation on reconnect. An idle WebSocket session costs about 93 KB of heap, mostly the servlet
+  container's per-connection buffers ([load-tests](load-tests/README.md#chat)).
 
 ## Future improvements
 

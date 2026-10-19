@@ -12,3 +12,4 @@
 | [0008](0008-payment-uncertainty-and-reconciliation.md) | Unknown payment outcomes are reconciled, never guessed |
 | [0009](0009-gateway-authentication.md) | RS256 JWTs, rotated refresh tokens, authorisation at two layers |
 | [0010](0010-analytics-read-models.md) | Event-built analytics store for dashboards and audit |
+| [0011](0011-buyer-seller-chat.md) | Buyer-seller chat: STOMP over WebSocket, JWT on CONNECT, Redis fan-out between instances |
