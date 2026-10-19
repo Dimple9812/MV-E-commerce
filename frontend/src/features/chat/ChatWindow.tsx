@@ -389,7 +389,7 @@ function Composer({ conversation: c, attachment, onAttachmentUsed }: { conversat
     }
     setText('');
     stopTyping();
-    area.current?.focus();
+    area.current?.focus({ preventScroll: true });
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -430,7 +430,7 @@ function Composer({ conversation: c, attachment, onAttachmentUsed }: { conversat
           {replies.data.length === 0 && <span className="text-sm text-slate">No quick replies yet. Add them under Quick replies on this page.</span>}
           {replies.data.map((q) => (
             <button key={q.id} type="button" className="rounded-full border border-line px-3 py-1 text-sm hover:border-ink/40"
-              onClick={() => { setText((t) => (t ? `${t}\n${q.body}` : q.body)); setQuick(false); area.current?.focus(); }}>{q.title}</button>
+              onClick={() => { setText((t) => (t ? `${t}\n${q.body}` : q.body)); setQuick(false); area.current?.focus({ preventScroll: true }); }}>{q.title}</button>
           ))}
         </div>
       )}

@@ -6,6 +6,8 @@ import { FakeChatTransport, json, mockApi, renderApp, tokenFor } from '@/test/ha
 import { ChatWindow } from './ChatWindow';
 import { ConversationList } from './Inbox';
 import { setChatTransportFactory, backoffDelay } from './transport';
+import { chatKeys, clearUnread } from './cache';
+import { QueryClient } from '@tanstack/react-query';
 
 const ME = tokenFor().user.id;
 const SELLER = 'seller-1';
@@ -204,6 +206,21 @@ describe('inbox', () => {
     });
     renderApp(<ConversationList side="BUYER" linkTo={(id) => id} emptyText="No conversations yet." />, { path: '/m', route: '/m' });
     expect(await screen.findByText('No conversations yet.', undefined, { timeout: 3000 })).toBeInTheDocument();
+  });
+});
+
+describe('unread counts', () => {
+  it('reading a conversation clears its row and the badge at once, without waiting for a refetch', () => {
+    const qc = new QueryClient();
+    const row = (id: string, unread: number) => ({ id, unread }) as unknown as ConversationSummary;
+    qc.setQueryData(chatKeys.inbox('BUYER'), { pages: [{ items: [row('a', 2), row('b', 1)] }], pageParams: [null] });
+    qc.setQueryData(chatKeys.unread, { asBuyer: 3, asVendor: 4 });
+    clearUnread(qc, 'a', 'BUYER');
+    const inbox = qc.getQueryData<{ pages: { items: ConversationSummary[] }[] }>(chatKeys.inbox('BUYER'))!;
+    expect(inbox.pages[0]!.items.map((i) => i.unread)).toEqual([0, 1]);
+    expect(qc.getQueryData(chatKeys.unread)).toEqual({ asBuyer: 1, asVendor: 4 });
+    clearUnread(qc, 'a', 'BUYER'); // already read: nothing changes
+    expect(qc.getQueryData(chatKeys.unread)).toEqual({ asBuyer: 1, asVendor: 4 });
   });
 });
 

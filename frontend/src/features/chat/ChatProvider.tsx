@@ -17,7 +17,7 @@ import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useAuth } from '@/auth/AuthProvider';
 import { ApiError, onSessionChange } from '@/lib/api';
 import type { ChatEvent, ChatMessage, ChatMessageType, ChatSide, Conversation, MessagePage } from '@/lib/types';
-import { chatApi, chatKeys, newClientId, newestId, patchConversation, refreshInboxSoon, upsertMessages } from './cache';
+import { chatApi, chatKeys, clearUnread, newClientId, newestId, patchConversation, refreshInboxSoon, upsertMessages } from './cache';
 import { createChatTransport, type ChatTransport, type ConnectionState } from './transport';
 
 export interface Draft {
@@ -273,12 +273,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const markRead = useCallback((conversationId: string, lastReadMessageId: number) => {
     patchConversation(qc, conversationId, (c) => ({ ...c, myLastReadMessageId: Math.max(c.myLastReadMessageId, lastReadMessageId) }));
+    const side = qc.getQueryData<Conversation>(chatKeys.conversation(conversationId))?.side;
+    if (side === 'BUYER' || side === 'VENDOR') clearUnread(qc, conversationId, side);
     const sent = transport.current?.publish('/app/chat.read', { conversationId, lastReadMessageId });
     if (!sent) {
       void chatApi.read(conversationId, lastReadMessageId).catch(() => undefined).finally(() => refreshInboxSoon(qc));
-    } else {
-      refreshInboxSoon(qc);
     }
+    // over the socket the inbox is refetched when our own read receipt comes back, i.e. after the read is stored;
+    // refetching now could bring the old unread count back for a moment
   }, [qc]);
 
   const value = useMemo<ChatState>(() => ({ connection, pending, typing, presence, send, retry, discard, sendTyping, markRead }),

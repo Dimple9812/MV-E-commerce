@@ -89,6 +89,30 @@ export function patchConversation(qc: QueryClient, id: string, patch: (c: Conver
   qc.setQueryData<Conversation>(chatKeys.conversation(id), (c) => (c ? patch(c) : c));
 }
 
+/**
+ * Reading a conversation clears its unread count in the inbox and the header badge at once; the refetch that
+ * follows the server's read receipt confirms it. Without this the row kept "1 unread" while being read.
+ */
+export function clearUnread(qc: QueryClient, conversationId: string, side: ChatSide) {
+  let cleared = 0;
+  qc.setQueryData<InfiniteData<CursorPage<ConversationSummary>, unknown>>(chatKeys.inbox(side), (d) => d && ({
+    ...d,
+    pages: d.pages.map((p) => ({
+      ...p,
+      items: p.items.map((i) => {
+        if (i.id !== conversationId || i.unread === 0) return i;
+        cleared += i.unread;
+        return { ...i, unread: 0 };
+      }),
+    })),
+  }));
+  if (cleared > 0) {
+    qc.setQueryData<UnreadCounts>(chatKeys.unread, (u) => u && (side === 'VENDOR'
+      ? { ...u, asVendor: Math.max(0, u.asVendor - cleared) }
+      : { ...u, asBuyer: Math.max(0, u.asBuyer - cleared) }));
+  }
+}
+
 /** Inbox and badges are cheap to refetch; coalesce bursts of events into one refetch. */
 let inboxTimer: number | null = null;
 export function refreshInboxSoon(qc: QueryClient) {
