@@ -1,5 +1,5 @@
-import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
-import { Link, Route, Routes } from 'react-router-dom';
+import { lazy, Suspense, useEffect, type ComponentType, type ReactNode } from 'react';
+import { Link, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import { BarChart3, Boxes, ClipboardList, FolderTree, Flag, LayoutDashboard, MessageCircle, MessageSquare, Package, ScrollText, ShieldAlert, Store, Truck, Users, Wallet, CreditCard } from 'lucide-react';
 import { RequireRole } from '@/auth/RequireRole';
 import { DashboardLayout, StoreLayout, type NavItem } from '@/components/layout';
@@ -89,8 +89,20 @@ function NotFound() {
   return <EmptyState title="This page does not exist" action={<Link to="/" className="btn-primary">Back to the store</Link>}>The link may be old, or the item was removed.</EmptyState>;
 }
 
+/** A new page starts at the top (e.g. "Ask the shop" from far down a product page); back and forward keep theirs. */
+function ScrollToTopOnNavigate() {
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    if (navigationType !== 'POP') window.scrollTo(0, 0);
+  }, [pathname, navigationType]);
+  return null;
+}
+
 export function App() {
   return (
+    <>
+    <ScrollToTopOnNavigate />
     <Routes>
       <Route element={<StoreLayout />}>
         <Route index element={<HomePage />} />
@@ -146,6 +158,6 @@ export function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </>
   );
 }
-
