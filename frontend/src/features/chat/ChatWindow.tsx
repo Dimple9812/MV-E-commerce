@@ -380,11 +380,13 @@ function Composer({ conversation: c, attachment, onAttachmentUsed }: { conversat
     const body = text.trim();
     if (!body && !card) return;
     if (card) {
-      chat.send(c.id, { type: card.type, productId: card.productId, suborderId: card.suborderId });
+      // the question travels with the card as one message, so it previews and reads as one thought
+      chat.send(c.id, { type: card.type, productId: card.productId, suborderId: card.suborderId, body: body || undefined });
       setCard(null);
       onAttachmentUsed?.();
+    } else {
+      chat.send(c.id, { type: 'TEXT', body });
     }
-    if (body) chat.send(c.id, { type: 'TEXT', body });
     setText('');
     stopTyping();
     area.current?.focus();

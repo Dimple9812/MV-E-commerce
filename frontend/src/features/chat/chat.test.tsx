@@ -87,6 +87,19 @@ describe('chat window', () => {
     await waitFor(() => expect(within(bubble).getByText('Seen')).toBeInTheDocument());
   });
 
+  it('sends an attached product card and the question as one message', async () => {
+    api();
+    renderApp(<ChatWindow conversationId="c1" attachment={{ type: 'PRODUCT_CARD', productId: 'p1', label: 'Studio Headphones' }} />,
+      { path: '/chat', route: '/chat' });
+    await screen.findByText('Yes, Bluetooth 5.3');
+    expect(screen.getByText(/Attaching:/)).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Message Aurora Sound'), 'Does it come in white?{Enter}');
+    const sends = transport.published.filter((p) => p.destination === '/app/chat.send');
+    expect(sends).toHaveLength(1);
+    expect(sends[0]!.body).toMatchObject({ type: 'PRODUCT_CARD', productId: 'p1', body: 'Does it come in white?' });
+    expect(screen.queryByText(/Attaching:/)).not.toBeInTheDocument();
+  });
+
   it('falls back to HTTP with the same client id when the socket is down', async () => {
     transport.connected = false;
     let posted: Record<string, unknown> | null = null;
