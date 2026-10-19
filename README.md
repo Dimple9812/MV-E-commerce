@@ -18,8 +18,11 @@ The demo does not run the Java services: see [Demo mode](#demo-mode) for what it
 > PostgreSQL, Kafka and Redis: 136 backend tests (62 unit, 74 integration), 43 frontend unit tests, 7 Playwright
 > browser tests and 12 API end-to-end checks passed, including on a clean install, plus k6 load tests with
 > recorded results. The Docker images, Compose stack, Helm chart and GitHub workflows were validated statically
-> but **not built, deployed or run** in that environment (no container registry access). Exactly what was verified,
-> and how: [docs/implementation-status.md](docs/implementation-status.md).
+> but **not built, deployed or run** in that environment (no container registry access). Buyer-seller chat was
+> verified on 2026-10-19: 213 backend tests (116 unit, 97 integration, including two chat-service instances
+> exchanging messages through Redis), 54 frontend unit tests, 8 Playwright journeys on the demo build (two-tab live
+> chat among them) and k6 WebSocket load and capacity tests; Compose, Helm and the workflows were not run for it.
+> Exactly what was verified, and how: [docs/implementation-status.md](docs/implementation-status.md).
 
 ## Contents
 

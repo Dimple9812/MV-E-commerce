@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated 2026-10-11. "Verified" means the check was executed and passed in the session named below;
+Last updated 2026-10-19 (chat-service). "Verified" means the check was executed and passed in the session named below;
 anything not executed is listed as unverified, not as working.
 
 ## Verification environment
@@ -38,6 +38,28 @@ environment variables from `docker-compose.yml`.
 
 Load testing and the clean install found and fixed real defects; they are listed under "Defects found during
 verification".
+
+## Chat verification run (2026-10-19)
+
+Same kind of VM (2 vCPU, 7.6 GB). **No Docker daemon was available**, so PostgreSQL 16 and Redis 7 ran as local
+processes and Kafka 3.9.1 (KRaft) was started from its Maven Central jars.
+
+| Check | Command | Result |
+|---|---|---|
+| Backend build and all tests | `mvn -B clean verify` with `MF_TEST_DB_URL` / `MF_TEST_REDIS_HOST` (and `TZ=UTC`: the local PostgreSQL rejected the JVM's `Asia/Calcutta` zone name) | **213 passed, 0 failed** (116 unit, 97 integration) in 13 modules; chat-service 51 unit + 22 integration, including two chat-service instances exchanging messages, typing and receipts through Redis |
+| Frontend lint, types, unit tests, build | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` | passed; **54 tests**; the regular bundle contains the STOMP client and none of the demo code |
+| Demo build in a browser | `VITE_DEMO_MODE=true npm run build`, `vite preview`, `E2E_DEMO=1 npx playwright test e2e/demo.spec.ts e2e/demo-chat.spec.ts` (Chromium) | **8/8 passed**, including Customer and Seller chatting live in two tabs (messages, typing, seen ticks, contact filter, reset) |
+| Event contracts | `contracts/events/generate.py` (no diff), `scripts/validate-contracts.py` | 58 contracts; committed examples valid |
+| Mermaid diagrams | rendered with Mermaid 11.4 in headless Chromium | README 14/14, data model 10/10 |
+| Chat load and capacity | k6 over real STOMP sessions, two chat-service instances | see [load-tests/README.md](../load-tests/README.md#chat): 0 of 50,066 messages lost; 2,500 sessions per instance at 384 MB heap, 8,000 at 1 GB |
+
+Not run in this session: the Compose stack and Docker images (no Docker daemon), `helm lint` and the GitHub
+workflows (including the new `demo-e2e` job), and the full-stack Playwright suite against real services.
+
+Found and fixed while verifying chat: `CatalogApiIT` replaced the per-test PostgreSQL initializer with its own
+`@ContextConfiguration`, so it only passed where a real `catalog_db` existed (it would fail on Testcontainers in
+CI); a demo transport that could reorder a card and its text; an inbox preview that hid the question sent with a
+card; a stale unread badge on the conversation being read; pages opening at the previous page's scroll position.
 
 ## Feature status
 
