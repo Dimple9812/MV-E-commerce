@@ -3,6 +3,10 @@ server:
   tomcat:
     # image attachments are up to 5 MB (the platform default is 2 MB)
     max-swallow-size: 6MB
+    # Every open WebSocket holds one Tomcat connection, so this caps sessions per instance (Tomcat's default,
+    # stated here because it is the hard limit). Size it with the heap: an idle session costs about 95 KB
+    # (load-tests/README.md#chat), so 8,192 sessions need roughly 1 GB.
+    max-connections: ${CHAT_MAX_CONNECTIONS:8192}
 
 spring:
   application:
