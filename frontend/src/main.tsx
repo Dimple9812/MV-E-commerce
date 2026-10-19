@@ -6,7 +6,7 @@ import { ApiError } from '@/lib/api';
 import { AuthProvider } from '@/auth/AuthProvider';
 import { CartProvider } from '@/cart/CartProvider';
 import { ToastProvider } from '@/components/Toast';
-import { ChatProvider } from '@/features/chat';
+import { ChatProvider, setChatTransportFactory } from '@/features/chat';
 import { App } from './App';
 import './styles.css';
 
@@ -28,6 +28,8 @@ async function start() {
   if (import.meta.env.VITE_DEMO_MODE === 'true') {
     const demo = await import('./demo');
     demo.installDemoBackend();
+    // chat events travel between tabs over a BroadcastChannel instead of a WebSocket
+    setChatTransportFactory(demo.demoTransport);
     Banner = demo.DemoBanner;
   }
   createRoot(document.getElementById('root')!).render(

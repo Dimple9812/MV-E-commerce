@@ -35,6 +35,7 @@ export function DemoBanner() {
         <p className="min-w-0 flex-1 basis-72">
           <span className="font-semibold">Live demo.</span>{' '}
           The backend is simulated in your browser with sample data, so changes stay on this device.{' '}
+          <span className="text-mist/85">Open a second tab as Seller to see live chat.</span>{' '}
           <button className="underline underline-offset-2 hover:no-underline" onClick={() => setDetails(!details)} aria-expanded={details}>
             {details ? 'Less' : 'How it works'}
           </button>
